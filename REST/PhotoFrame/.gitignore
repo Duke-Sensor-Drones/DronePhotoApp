@@ -5,4 +5,4 @@ persist-storage/
 persist-mediaitemcache/
 persist-albumcache/
 .DS_STORE
-views/config.js
+config.js
