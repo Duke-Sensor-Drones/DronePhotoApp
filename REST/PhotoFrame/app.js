@@ -176,7 +176,7 @@ app.get('/', (req, res) => {
     // Not logged in yet.
     res.render('pages/login');
   } else {
-    res.render('pages/frame');
+    res.render('pages/album');
   }
 });
 
@@ -188,7 +188,7 @@ app.get('/logout', (req, res) => {
   res.redirect('/');
 });
 
-// Star the OAuth login process for Google.
+// Start the OAuth login process for Google.
 app.get('/auth/google', passport.authenticate('google', {
   scope: config.scopes,
   failureFlash: true,  // Display errors to the user.
@@ -206,74 +206,16 @@ app.get(
       res.redirect('/');
     });
 
-// Loads the search page if the user is authenticated.
-// This page includes the search form.
-app.get('/search', (req, res) => {
-  renderIfAuthenticated(req, res, 'pages/search');
-});
-
 // Loads the album page if the user is authenticated.
 // This page displays a list of albums owned by the user.
 app.get('/album', (req, res) => {
   renderIfAuthenticated(req, res, 'pages/album');
 });
 
-
-// Handles form submissions from the search page.
-// The user has made a selection and wants to load photos into the photo frame
-// from a search query.
-// Construct a filter and submit it to the Library API in
-// libraryApiSearch(authToken, parameters).
-// Returns a list of media items if the search was successful, or an error
-// otherwise.
-app.post('/loadFromSearch', async (req, res) => {
-  const authToken = req.user.token;
-
-  logger.info('Loading images from search.');
-  logger.silly('Received form data: ', req.body);
-
-  // Construct a filter for photos.
-  // Other parameters are added below based on the form submission.
-  const filters = {contentFilter: {}, mediaTypeFilter: {mediaTypes: ['PHOTO']}};
-
-  if (req.body.includedCategories) {
-    // Included categories are set in the form. Add them to the filter.
-    filters.contentFilter.includedContentCategories =
-        [req.body.includedCategories];
-  }
-
-  if (req.body.excludedCategories) {
-    // Excluded categories are set in the form. Add them to the filter.
-    filters.contentFilter.excludedContentCategories =
-        [req.body.excludedCategories];
-  }
-
-  // Add a date filter if set, either as exact or as range.
-  if (req.body.dateFilter == 'exact') {
-    filters.dateFilter = {
-      dates: constructDate(
-          req.body.exactYear, req.body.exactMonth, req.body.exactDay),
-    }
-  } else if (req.body.dateFilter == 'range') {
-    filters.dateFilter = {
-      ranges: [{
-        startDate: constructDate(
-            req.body.startYear, req.body.startMonth, req.body.startDay),
-        endDate:
-            constructDate(req.body.endYear, req.body.endMonth, req.body.endDay),
-      }]
-    }
-  }
-
-  // Create the parameters that will be submitted to the Library API.
-  const parameters = {filters};
-
-  // Submit the search request to the API and wait for the result.
-  const data = await libraryApiSearch(authToken, parameters);
-
-  // Return and cache the result and parameters.
-  const userId = req.user.profile.id;
-  returnPhotos(res, userId, data, parameters);
+// Loads the album page if the user is authenticated.
+// This page displays a list of albums owned by the user.
+app.get('/identification', (req, res) => {
+  renderIfAuthenticated(req, res, 'pages/identification');
 });
 
 // Handles selections from the album page where an album ID is submitted.

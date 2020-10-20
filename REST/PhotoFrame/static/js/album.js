@@ -98,23 +98,6 @@ function listAlbums() {
             $('<div />').addClass('mdl-list__item-secondary-action');
         materialDesignLiteList.append(secondaryContentRoot);
 
-
-        // The 'add to photo frame' link.
-        const linkToAddToPhotoFrame = $('<a />')
-                                          .addClass('album-title')
-                                          .attr('data-id', item.id)
-                                          .attr('data-title', item.title);
-        secondaryContentRoot.append(linkToAddToPhotoFrame);
-
-
-        // The button for the 'add to photo frame' link.
-        const addToPhotoFrameButton =
-            $('<button />')
-                .addClass(
-                    'mdl-button mdl-js-button mdl-button--raised mdl-button--accent')
-                .text('Add to frame');
-        linkToAddToPhotoFrame.append(addToPhotoFrameButton);
-
         // The 'open in Google Photos' link.
         const linkToGooglePhotos =
             $('<a />').attr('target', '_blank').attr('href', item.productUrl);

@@ -21,7 +21,7 @@
 
 	<link rel="stylesheet" href="/css/frame.css">
 	
-	<title>Photo Frame sample</title>
+	<title>Drone Photo App</title>
 </head>
 
 <body>
@@ -30,21 +30,23 @@
 		<header class="mdl-layout__header mdl-layout__header--waterfall">
 			<div class="mdl-layout__header-row">
 				<!-- Title -->
-				<span class="mdl-layout-title">Photo Frame Sample</span>
+				<span class="mdl-layout-title">Drone Photo App</span>
 				<!-- Add spacer, to align avatar/disconnect to the right -->
 				<div class="mdl-layout-spacer"></div>
 				<nav class="mdl-navigation">
 					<img src=" <%= avatarUrl %>" id="userAvatar" />
 					 <%= name %>
 					<a class="mdl-navigation__link" href="/logout">Disconnect</a>
+					<a target="_blank" href="https://photos.google.com/">
+						<button class="gp-button raised" style="color:white">Go to Google Photos</button>
+					</a>
 				</nav>
 			</div>
 			<div class="mdl-layout__header-row">
 				<!-- Navigation -->
 				<nav class="mdl-navigation">
-					<a class="mdl-navigation__link" href="/">PREVIEW</a>
-					<a class="mdl-navigation__link" href="/search">SEARCH</a>
 					<a class="mdl-navigation__link" href="/album">ALBUMS</a>
+					<a class="mdl-navigation__link" href="/identification">IDENTIFICATION</a>
 				</nav>
 			</div>
 		</header>
