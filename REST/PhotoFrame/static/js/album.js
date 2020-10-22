@@ -83,7 +83,7 @@ function listAlbums() {
         primaryContentRoot.append(primaryContentImage);
 
         // The title of the album as the primary title of this item.
-        const primaryContentTitle = $('<div />').text(item.title);
+        const primaryContentTitle = $('<div />').text(item.title).addClass('album-title');
         primaryContentRoot.append(primaryContentTitle);
 
         // The number of items in this album as the sub title.
