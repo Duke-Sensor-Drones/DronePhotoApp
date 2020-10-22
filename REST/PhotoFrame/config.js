@@ -48,4 +48,8 @@ config.albumPageSize = 50;
 // The API end point to use. Do not change.
 config.apiEndpoint = 'https://photoslibrary.googleapis.com';
 
+// Carrie's changes and configs for PlantNet
+config.plantNetAPIkey = 'ENTER PLANT NET API KEY';
+config.plantNetAPIendpoint = 'https://my-api.plantnet.org/v2/identify/all?';
+
 module.exports = config;
