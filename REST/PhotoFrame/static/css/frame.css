@@ -68,7 +68,7 @@ pre {
 
 .mdl-list__item--two-line {
   height: 96px;
-  width: 840px;
+  width: 300px;
 }
 
 .snippet {
@@ -162,6 +162,14 @@ pre {
   background-image: url('/imgs/logo_photos_24dp.svg');
   background-repeat: no-repeat;
   background-position: 8px 8px;
+}
+
+.id-album-item {
+  background-color: aqua;
+}
+
+.id-album-item:hover {
+  background-color: rebeccapurple;
 }
 
 .gp-button::-moz-focus-inner {
