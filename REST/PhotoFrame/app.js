@@ -250,11 +250,6 @@ app.get('/getAlbums', async (req, res) => {
   // Attempt to load the albums from cache if available.
   // Temporarily caching the albums makes the app more responsive.
 
-  //DELETE ME
-  await callPlant();
-
-
-
   const cachedAlbums = await albumCache.getItem(userId);
   if (cachedAlbums) {
     logger.verbose('Loaded albums from cache.');
@@ -318,6 +313,15 @@ app.get('/getQueue', async (req, res) => {
     logger.verbose('No cached data.')
     res.status(200).send({});
   }
+});
+
+// Makes a call to the Plant ID API
+app.post('/identifyPlant', async (req, res) => {
+  const urlList = req.body.urlList;
+
+  //TODO: eventually user needs to input the info
+  const organs = ["flower"]
+  identificationAPICall(res, urlList, organs);
 });
 
 
@@ -504,14 +508,19 @@ async function libraryApiGetAlbums(authToken) {
   return {albums, error};
 }
 
-async function callPlant() {
-  let imageList = ['https://my.plantnet.org/public/media/image_1.jpeg', 'https://my.plantnet.org/public/media/image_2.jpeg']
-  let organList = ['flower', 'leaf']
-  identificationAPICall(imageList, organList);
-}
+// async function callPlant() {
+//   //let imageList = ['https://my.plantnet.org/public/media/image_1.jpeg', 'https://my.plantnet.org/public/media/image_2.jpeg']
+//   let imageList = ['https://www.gardendesign.com/pictures/images/900x705Max/dream-team-s-portland-garden_6/marigold-flowers-orange-pixabay_12708.jpg']
+//   //let organList = ['flower', 'leaf']
+//   let organList = ['flower']
+//   identificationAPICall(imageList, organList);
+// }
 
 // Will identify plants from selected photos
-async function identificationAPICall(imageUrlList, organList) {
+// @param imageUrlList: list of url strings to the images to be id'd
+// @param organList: list of organ strings that correspond to the images
+//ex organs: 'leaf' or 'flower' 
+async function identificationAPICall(res, imageUrlList, organList) {
   if (imageUrlList.length != organList.length) {
     logger.error('Plant ID image url list and organ list are not the same length');
   }
@@ -523,17 +532,17 @@ async function identificationAPICall(imageUrlList, organList) {
 
   try {
     const result = await request.get(url);
-    logger.info(`Response: ${result}`);
+    res.status(200).send(result);
+    //logger.info(`Response: ${result}`);
   } catch (error) {
+    res.status(400).send(error);
     logger.error(`Plant ID API error: ${error}`);
   }
 
 }
 
 // creates the url used to hit the PlantNet ID API
-// @param imageUrlList: list of url strings to the images to be id'd
-// @param organList: list of organ strings that correspond to the images
-//ex organs: 'leaf' or 'flower' 
+
 function createPlantIdUrl(imageUrlList, organList) {
   let encodedImages = imageUrlList.map(x => {
     let a = x.replace(new RegExp(':', 'g'), '%3A');

@@ -102,7 +102,9 @@ function showPreview(source, mediaItems) {
       // The original width and height are part of the mediaMetadata of
       // an image media item from the API.
       const linkToFullImage = $('<a />')
-                                  .attr('href', fullUrl)
+        .addClass('id-media-item')
+        .attr('data-base-url', item.baseUrl)
+                                  // .attr('href', fullUrl)
                                   .attr('data-fancybox', 'gallery')
                                   .attr('data-width', item.mediaMetadata.width)
                                   .attr('data-height', item.mediaMetadata.height);
@@ -180,12 +182,41 @@ function loadQueue() {
     });
   }
 
+function identify(target, urlList) {
+  $.ajax({
+    type: 'POST',
+    url: '/identifyPlant',
+    dataType: 'json',
+    data: { urlList: urlList },
+    success: (data) => {
+      console.log('API hit');
+      console.log(data);
+
+      let names = '';
+      data.results.map(x => {
+        names += x.species.commonNames[0] + ", "
+      })
+      console.log("Names: ", names);
+
+      const test = $('<figcaption />')
+      test.text(`${names}`);
+
+      target.append(test);
+    },
+    error: (data) => {
+      handleError('Couldn\'t import album', data);
+    }
+  });
+}
+
 $(document).ready(() => {
     // Load the list of albums from the backend when the page is ready.
     displayAlbumList();
     
     // Clicking the 'add to frame' button starts an import request.
     $('#identification-albums').on('click', '.id-album-item', (event) => {
+      console.log("Album target");
+      console.log(event);
         const target = $(event.currentTarget);
         const albumId = target.attr('data-id');
         const albumTitle = target.attr('data-title');
@@ -194,6 +225,19 @@ $(document).ready(() => {
 
         loadFromAlbum(albumTitle, albumId);
     });
+
+  //Clicking on an image will send it to the plant ID API
+  //the common name results will display
+  $('#images-container').on('click', '.id-media-item', (event) => {
+    console.log("Image clicked");
+    const target = $(event.currentTarget);
+    const itemUrl = target.attr('data-base-url');
+    console.log(itemUrl);
+    const list = [itemUrl];
+    identify(target, list);
+
+
+  })
 
   });
   
