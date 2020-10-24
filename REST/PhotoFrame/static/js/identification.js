@@ -104,6 +104,7 @@ function showPreview(source, mediaItems) {
       const linkToFullImage = $('<a />')
         .addClass('id-media-item')
         .attr('data-base-url', item.baseUrl)
+        .attr('data-media-id', item.id)
                                   // .attr('href', fullUrl)
                                   .attr('data-fancybox', 'gallery')
                                   .attr('data-width', item.mediaMetadata.width)
@@ -209,6 +210,24 @@ function identify(target, urlList) {
   });
 }
 
+// takes in a media item ID and hits the google photos API
+// to get the rest of the info for the image
+// TODO: this will probs be moved to another page
+function getMediaItem(mediaItemID) {
+  $.ajax({
+    type: 'POST',
+    url: '/getMediaItem',
+    dataType: 'json',
+    data: { mediaItemID: mediaItemID },
+    success: (data) => {
+      console.log('Media Item Gotten, ', data);
+    },
+    error: (data) => {
+      handleError('Couldn\'t import album', data);
+    }
+  });
+}
+
 $(document).ready(() => {
     // Load the list of albums from the backend when the page is ready.
     displayAlbumList();
@@ -232,10 +251,11 @@ $(document).ready(() => {
     console.log("Image clicked");
     const target = $(event.currentTarget);
     const itemUrl = target.attr('data-base-url');
-    console.log(itemUrl);
+    console.log('ID of clicked: ', target.attr('data-media-id'));
     const list = [itemUrl];
     identify(target, list);
 
+    getMediaItem(target.attr('data-media-id'));
 
   })
 

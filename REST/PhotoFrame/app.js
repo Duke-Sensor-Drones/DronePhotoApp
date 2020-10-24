@@ -324,6 +324,10 @@ app.post('/identifyPlant', async (req, res) => {
   identificationAPICall(res, urlList, organs);
 });
 
+app.post('/getMediaItem', async (req, res) => {
+  getMediaItemAPICall(res, req.user.token, req.body.mediaItemID);
+});
+
 
 
 // Start the server
@@ -566,6 +570,26 @@ function createPlantIdUrl(imageUrlList, organList) {
   })
 
   return finalURL;
+}
+
+async function getMediaItemAPICall(res, authToken, mediaItemID) {
+  let call = config.apiEndpoint + '/v1/mediaItems/' + mediaItemID;
+
+
+  try {
+    const result = await request.get(call, {
+      headers: { 'Content-Type': 'application/json' },
+      json: true,
+      auth: { 'bearer': authToken },
+    });
+
+    res.status(200).send(result);
+    //logger.info(`Response: ${result}`);
+  } catch (error) {
+    res.status(400).send(error);
+    logger.error(`Plant ID API error: ${error}`);
+  }
+
 }
 
 // [END app]
