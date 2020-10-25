@@ -78,6 +78,12 @@ albumCache.init();
 const storage = persist.create({dir: 'persist-storage/'});
 storage.init();
 
+
+//Local storage used to store info from id's
+// Key: media item id
+const idStorage = persist.create({ dir: 'persist-id-storage/' });
+idStorage.init();
+
 // Set up OAuth 2.0 authentication through the passport.js library.
 const passport = require('passport');
 const auth = require('./auth');
@@ -317,11 +323,10 @@ app.get('/getQueue', async (req, res) => {
 
 // Makes a call to the Plant ID API
 app.post('/identifyPlant', async (req, res) => {
-  const urlList = req.body.urlList;
+  const paramJSON = req.body.paramJSON;
 
   //TODO: eventually user needs to input the info
-  const organs = ["flower"]
-  identificationAPICall(res, urlList, organs);
+  identificationAPICall(res, paramJSON);
 });
 
 app.post('/getMediaItem', async (req, res) => {
@@ -521,19 +526,27 @@ async function libraryApiGetAlbums(authToken) {
 // }
 
 // Will identify plants from selected photos
-// @param imageUrlList: list of url strings to the images to be id'd
-// @param organList: list of organ strings that correspond to the images
-//ex organs: 'leaf' or 'flower' 
-async function identificationAPICall(res, imageUrlList, organList) {
-  if (imageUrlList.length != organList.length) {
-    logger.error('Plant ID image url list and organ list are not the same length');
+// @param paramJSON: list of map structs ex:
+// [
+//   {
+//     url: image base url,
+//     organ: plant organ in pic,   //e.g. "leaf" or "flower"
+//     mediaID: media item ID
+//   },
+//   {
+//     url: image base url,
+//     organ: plant organ in pic,   //e.g. "leaf" or "flower"
+//     mediaID: media item ID
+//   }
+// ]
+// 
+// 
+async function identificationAPICall(res, paramJSON) {
+  if (paramJSON.length > 5) {
+    logger.error("Too many images selected for ID");
   }
 
-
-  let url = createPlantIdUrl(imageUrlList, organList)
-  logger.info(url);
-  //logger.info(finalURL);
-
+  let url = createPlantIdUrl(paramJSON)
   try {
     const result = await request.get(url);
     res.status(200).send(result);
@@ -545,29 +558,39 @@ async function identificationAPICall(res, imageUrlList, organList) {
 
 }
 
+//TODO: HANDLE NEW PARAM THAT ISNT LISTS
+
 // creates the url used to hit the PlantNet ID API
 
-function createPlantIdUrl(imageUrlList, organList) {
-  let encodedImages = imageUrlList.map(x => {
-    let a = x.replace(new RegExp(':', 'g'), '%3A');
+function createPlantIdUrl(paramJSON) {
+  var imageUrlList = "";
+  let organList = "";
+
+  paramJSON.map(x => {
+    let ogImage = x.url;
+    let a = ogImage.replace(new RegExp(':', 'g'), '%3A');
     let b = a.replace(new RegExp('/', 'g'), '%2F');
     let c = '&images=' + b;
-    return c
+    imageUrlList += c;
+
+    organList += '&organs=' + x.organ;
   })
 
-  let encodedOrgans = organList.map(x => {
-    return '&organs=' + x;
-  })
+  // let encodedImages = imageUrlList.map(x => {
+  //   let a = x.replace(new RegExp(':', 'g'), '%3A');
+  //   let b = a.replace(new RegExp('/', 'g'), '%2F');
+  //   let c = '&images=' + b;
+  //   return c
+  // })
+
+  // let encodedOrgans = organList.map(x => {
+  //   return '&organs=' + x;
+  // })
 
   var finalURL = config.plantNetAPIendpoint + 'api-key=' + config.plantNetAPIkey;
 
-  encodedImages.map(x => {
-    finalURL += x;
-  })
-
-  encodedOrgans.map(x => {
-    finalURL += x;
-  })
+  finalURL += imageUrlList;
+  finalURL += organList;
 
   return finalURL;
 }

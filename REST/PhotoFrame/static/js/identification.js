@@ -183,12 +183,12 @@ function loadQueue() {
     });
   }
 
-function identify(target, urlList) {
+function identify(target, paramJSON) {
   $.ajax({
     type: 'POST',
     url: '/identifyPlant',
     dataType: 'json',
-    data: { urlList: urlList },
+    data: { paramJSON: paramJSON },
     success: (data) => {
       console.log('API hit');
       console.log(data);
@@ -251,9 +251,17 @@ $(document).ready(() => {
     console.log("Image clicked");
     const target = $(event.currentTarget);
     const itemUrl = target.attr('data-base-url');
-    console.log('ID of clicked: ', target.attr('data-media-id'));
-    const list = [itemUrl];
-    identify(target, list);
+
+    const param = [
+      {
+        url: target.attr('data-base-url'),
+        organ: "flower",
+        mediaID: target.attr('data-media-id')
+      }
+    ]
+
+    console.log('ID of clicked: ', target.attr('data-media-id'));;
+    identify(target, param);
 
     getMediaItem(target.attr('data-media-id'));
 
