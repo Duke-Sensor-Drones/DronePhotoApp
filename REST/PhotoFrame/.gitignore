@@ -4,5 +4,7 @@ sessions/
 persist-storage/
 persist-mediaitemcache/
 persist-albumcache/
+persist-groups-identified/
+persist-items-groups-identified/
 .DS_STORE
 config.js

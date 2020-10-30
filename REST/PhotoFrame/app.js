@@ -78,11 +78,22 @@ albumCache.init();
 const storage = persist.create({dir: 'persist-storage/'});
 storage.init();
 
+// Stores a key that is a unique group value and then 
+// an array of media id's and the identification results
+// for the group
 
-//Local storage used to store info from id's
-// Key: media item id
-const idStorage = persist.create({ dir: 'persist-id-storage/' });
-idStorage.init();
+// ALSO has a key "groupCounter" that stores an int that is incremented at each id
+// this ensures a unique group id. the const below will be the key
+const groupsIdentifiedStorage = persist.create({ dir: 'persist-groups-identified/' });
+groupsIdentifiedStorage.init();
+const groupIdCounter = "groupIdCounter"
+
+// Stores a key that is a media item id
+// and then an array of group ids that the media item has been
+// a part of
+const mediaItemsIdentifiedStorage = persist.create({ dir: 'persist-items-groups-identified/' });
+mediaItemsIdentifiedStorage.init();
+
 
 // Set up OAuth 2.0 authentication through the passport.js library.
 const passport = require('passport');
@@ -329,11 +340,12 @@ app.post('/identifyPlant', async (req, res) => {
   identificationAPICall(res, paramJSON);
 });
 
+// Makes a call to the google photos API with a media item ID
+// returns all the info that google photos has associated with
+// that ID
 app.post('/getMediaItem', async (req, res) => {
   getMediaItemAPICall(res, req.user.token, req.body.mediaItemID);
 });
-
-
 
 // Start the server
 server.listen(config.port, () => {
@@ -517,13 +529,6 @@ async function libraryApiGetAlbums(authToken) {
   return {albums, error};
 }
 
-// async function callPlant() {
-//   //let imageList = ['https://my.plantnet.org/public/media/image_1.jpeg', 'https://my.plantnet.org/public/media/image_2.jpeg']
-//   let imageList = ['https://www.gardendesign.com/pictures/images/900x705Max/dream-team-s-portland-garden_6/marigold-flowers-orange-pixabay_12708.jpg']
-//   //let organList = ['flower', 'leaf']
-//   let organList = ['flower']
-//   identificationAPICall(imageList, organList);
-// }
 
 // Will identify plants from selected photos
 // @param paramJSON: list of map structs ex:
@@ -549,45 +554,69 @@ async function identificationAPICall(res, paramJSON) {
   let url = createPlantIdUrl(paramJSON)
   try {
     const result = await request.get(url);
-    res.status(200).send(result);
-    //logger.info(`Response: ${result}`);
+    const resultJSON = JSON.parse(result);
+
+    //Set group id
+    let groupID = await groupsIdentifiedStorage.getItem(groupIdCounter);
+    if (groupID == null) {
+      //initializes group id to 1 if never set
+      await groupsIdentifiedStorage.setItem(groupIdCounter, 1);
+      groupID = 1;
+    }
+
+    // Make an array of items that are part of the group
+    let mediaIDs = [];
+    paramJSON.map((x) => {
+      mediaIDs.push(x.mediaID);
+    });
+
+    // Make an object with the above array and results to save and group id
+    let toSave = {
+      mediaIDs: mediaIDs,
+      groupID: groupID,
+      results: resultJSON.results,
+    };
+    // Save to the groups identified storage
+    groupsIdentifiedStorage.setItem(String(groupID), toSave);
+
+    // Add the group id to each of the media items
+    for (let i = 0; i < mediaIDs.length; i++) {
+      var arr = await mediaItemsIdentifiedStorage.get(mediaIDs[i]);
+      if (arr == null) {
+        arr = [];
+      }
+      arr.push(String(groupID));
+      await mediaItemsIdentifiedStorage.setItem(mediaIDs[i], arr);
+    }
+
+    //Incremenet the identifier
+    await groupsIdentifiedStorage.setItem(groupIdCounter, groupID + 1);
+    res.status(200).send(toSave);
+
   } catch (error) {
     res.status(400).send(error);
-    logger.error(`Plant ID API error: ${error}`);
+    logger.error(`Plant ID API or Storage error: ${error}`);
   }
 
 }
 
-//TODO: HANDLE NEW PARAM THAT ISNT LISTS
-
 // creates the url used to hit the PlantNet ID API
-
 function createPlantIdUrl(paramJSON) {
   var imageUrlList = "";
   let organList = "";
 
-  paramJSON.map(x => {
+  paramJSON.map((x) => {
     let ogImage = x.url;
-    let a = ogImage.replace(new RegExp(':', 'g'), '%3A');
-    let b = a.replace(new RegExp('/', 'g'), '%2F');
-    let c = '&images=' + b;
+    let a = ogImage.replace(new RegExp(":", "g"), "%3A");
+    let b = a.replace(new RegExp("/", "g"), "%2F");
+    let c = "&images=" + b;
     imageUrlList += c;
 
-    organList += '&organs=' + x.organ;
-  })
+    organList += "&organs=" + x.organ;
+  });
 
-  // let encodedImages = imageUrlList.map(x => {
-  //   let a = x.replace(new RegExp(':', 'g'), '%3A');
-  //   let b = a.replace(new RegExp('/', 'g'), '%2F');
-  //   let c = '&images=' + b;
-  //   return c
-  // })
-
-  // let encodedOrgans = organList.map(x => {
-  //   return '&organs=' + x;
-  // })
-
-  var finalURL = config.plantNetAPIendpoint + 'api-key=' + config.plantNetAPIkey;
+  var finalURL =
+    config.plantNetAPIendpoint + "api-key=" + config.plantNetAPIkey;
 
   finalURL += imageUrlList;
   finalURL += organList;
@@ -607,12 +636,12 @@ async function getMediaItemAPICall(res, authToken, mediaItemID) {
     });
 
     res.status(200).send(result);
-    //logger.info(`Response: ${result}`);
   } catch (error) {
     res.status(400).send(error);
     logger.error(`Plant ID API error: ${error}`);
   }
 
 }
+
 
 // [END app]

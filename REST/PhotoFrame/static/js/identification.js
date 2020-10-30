@@ -193,16 +193,16 @@ function identify(target, paramJSON) {
       console.log('API hit');
       console.log(data);
 
-      let names = '';
-      data.results.map(x => {
-        names += x.species.commonNames[0] + ", "
-      })
-      console.log("Names: ", names);
+      // let names = '';
+      // data.results.map(x => {
+      //   names += x.species.commonNames[0] + ", "
+      // })
+      // console.log("Names: ", names);
 
-      const test = $('<figcaption />')
-      test.text(`${names}`);
+      // const test = $('<figcaption />')
+      // test.text(`${names}`);
 
-      target.append(test);
+      // target.append(test);
     },
     error: (data) => {
       handleError('Couldn\'t import album', data);
@@ -223,7 +223,22 @@ function getMediaItem(mediaItemID) {
       console.log('Media Item Gotten, ', data);
     },
     error: (data) => {
-      handleError('Couldn\'t import album', data);
+      handleError('Couldn\'t import media item', data);
+    }
+  });
+}
+
+function getIdentifiedForAlbum(albumId) {
+  $.ajax({
+    type: 'POST',
+    url: '/getAlbumIdentified',
+    dataType: 'json',
+    data: { albumId: albumId },
+    success: (data) => {
+      console.log('Album media Items Gotten, ', data[0]);
+    },
+    error: (data) => {
+      handleError('Couldn\'t get identified info for this album', data);
     }
   });
 }
@@ -250,6 +265,7 @@ $(document).ready(() => {
   $('#images-container').on('click', '.id-media-item', (event) => {
     console.log("Image clicked");
     const target = $(event.currentTarget);
+
     const itemUrl = target.attr('data-base-url');
 
     const param = [
@@ -261,9 +277,11 @@ $(document).ready(() => {
     ]
 
     console.log('ID of clicked: ', target.attr('data-media-id'));;
+
+
     identify(target, param);
 
-    getMediaItem(target.attr('data-media-id'));
+    //getMediaItem(target.attr('data-media-id'));
 
   })
 
