@@ -259,3 +259,34 @@
   .id-album-title {
     padding-left: 10px !important;
   }
+
+  .id-button {
+    background-color: aliceblue;
+  }
+
+  .id-button:hover {
+    background-color: lightgray;
+  }
+
+  .image-check-checked {
+    font-size:30px; 
+    color: cornflowerblue; 
+    position: absolute; 
+    top:-70px; 
+    left:15px;
+    display: block;
+  }
+
+  .image-check-unchecked {
+    font-size:30px; 
+    color: cornflowerblue; 
+    position: absolute; 
+    top:-70px; 
+    left:15px;
+    display: none;
+  }
+
+  .image-selected {
+    outline: 4px solid cornflowerblue;
+    outline-offset: -7px;
+  }
