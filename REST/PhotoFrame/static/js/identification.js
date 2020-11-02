@@ -205,7 +205,7 @@ function identify(target, paramJSON) {
       // target.append(test);
     },
     error: (data) => {
-      handleError('Couldn\'t import album', data);
+      handleError('Error trying to identify', data.message);
     }
   });
 }

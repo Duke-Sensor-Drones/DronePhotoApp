@@ -235,6 +235,14 @@ app.get('/identification', (req, res) => {
   renderIfAuthenticated(req, res, 'pages/identification');
 });
 
+// Loads the results page if the user is authenticated.
+// This page displays the identification results.
+app.get('/results', (req, res) => {
+  renderIfAuthenticated(req, res, 'pages/results');
+});
+
+
+
 // Handles selections from the album page where an album ID is submitted.
 // The user has selected an album and wants to load photos from an album
 // into the photo frame.
@@ -594,7 +602,7 @@ async function identificationAPICall(res, paramJSON) {
     res.status(200).send(toSave);
 
   } catch (error) {
-    res.status(400).send(error);
+    res.status(400).send({error});
     logger.error(`Plant ID API or Storage error: ${error}`);
   }
 
