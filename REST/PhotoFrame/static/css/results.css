@@ -2,6 +2,11 @@
 .card {
     min-width: 330px;
     margin: 5px;
+    padding: 5px;
+}
+
+.bold-text {
+    font-weight: bold;
 }
 
 /* Encompasses the group id and the date*/
@@ -10,11 +15,36 @@
     margin: 0 0 0;
 }
 
-.card-group-text {
-    font-weight: bold;
+/* container for the list of common name options */
+.card-ids-container {
+    display: flex;
+    flex-direction: column;
+    height: 150px;
+    overflow: scroll;
+    overflow-y: scroll;
 }
 
-.card-content-div {
+.card-id-row {
+    display: flex;
+    border-bottom: 1px solid rgb(0, 0, 0, .1);
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.card-id-common-name {
+    flex: 3;
+    margin: 0px;
+}
+
+.card-id-score {
+    flex: 1;
+    text-align: right;
+    margin: 0px;
+}
+
+.results-card-container{
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;

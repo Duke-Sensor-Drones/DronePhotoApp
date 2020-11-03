@@ -573,9 +573,10 @@ async function identificationAPICall(res, paramJSON) {
     const resultsToSave = [];
 
     resultJSON.results.map(x => {
+      const roundedScore = Math.round(((x.score * 100) + Number.EPSILON) * 100) / 100
       const indiv = {
         id: x.gbif.id,
-        score: x.score,
+        score: roundedScore,
         scientificName: x.species.scientificNameWithoutAuthor,
         commonNames: x.species.commonNames,
         family: x.species.family.scientificNameWithoutAuthor,
