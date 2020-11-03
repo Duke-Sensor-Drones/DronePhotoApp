@@ -600,9 +600,10 @@ async function identificationAPICall(res, paramJSON) {
     });
 
     // Make an object with the above array and results to save and group id
-    let date = Date.now()
+    let date = new Date()
+    let dateString = date.toLocaleDateString()
     let toSave = {
-      date: date,
+      date: dateString,
       mediaIDs: mediaIDs,
       groupID: groupID,
       results: resultsToSave,

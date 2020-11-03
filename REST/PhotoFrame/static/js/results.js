@@ -24,11 +24,15 @@ function loadIdentified() {
   function showCards(identifiedResults){
     $('#results-container').empty();
 
-    $.each(identifiedResults, (i, result) => {
-        const card = $('<div />').addClass('demo-card-square mdl-card mdl-shadow--2dp');
+    let reverse = identifiedResults.reverse()
+
+    $.each(reverse, (i, result) => {
+        const card = $('<div />').addClass('demo-card-square mdl-card mdl-shadow--2dp card');
         const titleDiv = $('<div />').addClass('mdl-card__title mdl-card--expand');
-        const title = $('<h2 />').addClass('mdl-card__title mdl-card--expand').text(result.results[0].scientificName);
-        titleDiv.append(title);
+        const group = $('<p />').addClass('card-title mdl-card--expand card-group-text').text(`Group ${result.groupID}`);
+        const date = $('<p />').addClass('card-title mdl-card--expand').text(`Added on ${result.date}`);
+        titleDiv.append(group);
+        titleDiv.append(date);
         
 
         const thumbnailUrl = `${result.mediaItems[0].baseUrl}=w256-h256`;         

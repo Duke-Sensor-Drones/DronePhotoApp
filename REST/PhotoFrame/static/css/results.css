@@ -1,0 +1,21 @@
+
+.card {
+    min-width: 330px;
+    margin: 5px;
+}
+
+/* Encompasses the group id and the date*/
+.card-title{
+    font-size: 16px;
+    margin: 0 0 0;
+}
+
+.card-group-text {
+    font-weight: bold;
+}
+
+.card-content-div {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
