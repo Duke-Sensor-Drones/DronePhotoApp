@@ -3,9 +3,15 @@
 <% include ../partials/dialogs %>
 
 <!-- No header, and the drawer stays open on larger screens (fixed drawer). -->
-<div class="id-header">
+<div class="id-header" style="display: flex; flex-direction: row; width:auto">
+  <div>
     <h2>Send photos for identification</h2>
     <p class="subhead mdl-color-text--grey-700">Select photos to create new identification request or track previous requests.</p>
+  </div>
+  <div class="mdl-layout-spacer"></div>
+  <div style="display: flex; align-items: center; padding-right: 20px;">
+    <button class="mdl-button raised id-button" id="id_button">Identify Selected Photos</button>
+  </div>
 </div>
 <div class="mdl-layout mdl-js-layout mdl-layout--fixed-drawer">
   <div class="mdl-layout__drawer">
@@ -18,7 +24,7 @@
         <h1>Loading</h1>
         <div class="mdl-spinner mdl-js-spinner is-active"></div>
     </div>
-    <div class="page-content" id="images-container"></div>
+    <div class="page-content" id="images-container" style="padding-left: 20px;"></div>
   </main>
 </div>
 
