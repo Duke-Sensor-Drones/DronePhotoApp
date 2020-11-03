@@ -192,17 +192,6 @@ function identify(target, paramJSON) {
     success: (data) => {
       console.log('API hit');
       console.log(data);
-
-      // let names = '';
-      // data.results.map(x => {
-      //   names += x.species.commonNames[0] + ", "
-      // })
-      // console.log("Names: ", names);
-
-      // const test = $('<figcaption />')
-      // test.text(`${names}`);
-
-      // target.append(test);
     },
     error: (data) => {
       handleError('Error trying to identify', data.message);

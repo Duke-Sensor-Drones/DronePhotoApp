@@ -86,7 +86,9 @@ storage.init();
 // this ensures a unique group id. the const below will be the key
 const groupsIdentifiedStorage = persist.create({ dir: 'persist-groups-identified/' });
 groupsIdentifiedStorage.init();
-const groupIdCounter = "groupIdCounter"
+const groupIdCounter = "uniqueIdentifier";
+const groupPrefix = "group";  // every result saved should have this prefix
+// then a group id
 
 // Stores a key that is a media item id
 // and then an array of group ids that the media item has been
@@ -98,6 +100,7 @@ mediaItemsIdentifiedStorage.init();
 // Set up OAuth 2.0 authentication through the passport.js library.
 const passport = require('passport');
 const auth = require('./auth');
+const { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } = require('constants');
 auth(passport);
 
 // Set up a session middleware to handle user sessions.
@@ -351,8 +354,12 @@ app.post('/identifyPlant', async (req, res) => {
 // Makes a call to the google photos API with a media item ID
 // returns all the info that google photos has associated with
 // that ID
-app.post('/getMediaItem', async (req, res) => {
-  getMediaItemAPICall(res, req.user.token, req.body.mediaItemID);
+// app.post('/getMediaItem', async (req, res) => {
+//   getMediaItemAPICall(res, req.user.token, req.body.mediaItemID);
+// });
+
+app.get('/getIdentified', async (req, res) => {
+  getAllIdentified(res, req.user.token);
 });
 
 // Start the server
@@ -563,6 +570,20 @@ async function identificationAPICall(res, paramJSON) {
   try {
     const result = await request.get(url);
     const resultJSON = JSON.parse(result);
+    const resultsToSave = [];
+
+    resultJSON.results.map(x => {
+      const indiv = {
+        id: x.gbif.id,
+        score: x.score,
+        scientificName: x.species.scientificNameWithoutAuthor,
+        commonNames: x.species.commonNames,
+        family: x.species.family.scientificNameWithoutAuthor,
+        genus: x.species.genus.scientificNameWithoutAuthor,
+      }
+
+      resultsToSave.push(indiv);
+    })
 
     //Set group id
     let groupID = await groupsIdentifiedStorage.getItem(groupIdCounter);
@@ -579,13 +600,16 @@ async function identificationAPICall(res, paramJSON) {
     });
 
     // Make an object with the above array and results to save and group id
+    let date = Date.now()
     let toSave = {
+      date: date,
       mediaIDs: mediaIDs,
       groupID: groupID,
-      results: resultJSON.results,
+      results: resultsToSave,
     };
     // Save to the groups identified storage
-    groupsIdentifiedStorage.setItem(String(groupID), toSave);
+    let key = groupPrefix + String(groupID)
+    groupsIdentifiedStorage.setItem(key, toSave);
 
     // Add the group id to each of the media items
     for (let i = 0; i < mediaIDs.length; i++) {
@@ -632,22 +656,67 @@ function createPlantIdUrl(paramJSON) {
   return finalURL;
 }
 
-async function getMediaItemAPICall(res, authToken, mediaItemID) {
-  let call = config.apiEndpoint + '/v1/mediaItems/' + mediaItemID;
+// takes in an array of media item ids, hits the Google Photos API
+// and returns an arrya of results from that
+async function getMediaItemsAPICall(authToken, mediaItemIDs) {
+  let itemsReturned = [];
+  let errorMessages = [];
+  for(let i = 0; i < mediaItemIDs.length; i++){
+    let mediaItemID = mediaItemIDs[i];
 
+    let call = config.apiEndpoint + '/v1/mediaItems/' + mediaItemID;
 
-  try {
-    const result = await request.get(call, {
-      headers: { 'Content-Type': 'application/json' },
-      json: true,
-      auth: { 'bearer': authToken },
-    });
+    try {
+      const result = await request.get(call, {
+        headers: { 'Content-Type': 'application/json' },
+        json: true,
+        auth: { 'bearer': authToken },
+      });
+
+      itemsReturned.push(result);
+
+    } catch (error) {
+      errorMessages.push(error);
+      logger.error(`Error getting a media item from google photos: ${error}`);
+    }
+  }
+    let toSend = {
+      mediaItems: itemsReturned,
+      errors: errorMessages
+    }
+    // res.status(200).send(toSend);
+    return toSend;
+}
+
+async function getAllIdentified(res, authToken){
+  try{
+    let identified = await groupsIdentifiedStorage.valuesWithKeyMatch(groupPrefix);
+    let result = {
+      identifications: [],
+      errors: []
+    };
+    
+    for(let i = 0; i < identified.length; i++){
+      let returned = await getMediaItemsAPICall(authToken, identified[i].mediaIDs);
+
+      let errors = returned.errors;
+      errors.map(x => {
+        result.errors.push(x);
+      })
+
+      let save = {
+        ...identified[i],
+        mediaItems: returned.mediaItems,
+      }
+      result.identifications.push(save);
+    }
 
     res.status(200).send(result);
-  } catch (error) {
+  } catch(error){
     res.status(400).send(error);
-    logger.error(`Plant ID API error: ${error}`);
+    logger.error('Error getting identified info from the storage');
   }
+  
 
 }
 
