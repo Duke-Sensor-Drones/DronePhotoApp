@@ -57,26 +57,10 @@ function displayAlbumList() {
 
 function showPreview(source, mediaItems) {
   $('#images-container').empty();
-
-  // Display the length and the source of the items if set.
-  if (source && mediaItems) {
-    $('#images-count').text(mediaItems.length);
-    $('#images-source').text(JSON.stringify(source));
-    $('#preview-description').show();
-  } else {
-    $('#images-count').text(0);
-    $('#images-source').text('No photo search selected');
-    $('#preview-description').hide();
-  }
-
   // Loop over each media item and render it.
   $.each(mediaItems, (i, item) => {
     // Construct a thumbnail URL from the item's base URL at a small pixel size.
     const thumbnailUrl = `${item.baseUrl}=w256-h256`;
-    // Constuct the URL to the image in its original size based on its width and
-    // height.
-    const fullUrl = `${item.baseUrl}=w${item.mediaMetadata.width}-h${
-        item.mediaMetadata.height}`;
 
     // Compile the caption, conisting of the description, model and time.
     const description = item.description ? item.description : '';
@@ -104,8 +88,6 @@ function showPreview(source, mediaItems) {
                                 .attr('id', "check_" + item.id)
                                 .text("check_circle");
     thumbnailDiv.append(checkmark);
-
-    thumbnailDiv.append();
 
     $('#images-container').append(thumbnailDiv);
   });
@@ -230,8 +212,16 @@ $(document).ready(() => {
   // Clicking on an image will add it to an array of selected items and display a checkmark over it.
   $('#images-container').on('click', '.id-media-item', (event) => {
     const target = $(event.currentTarget);
-    //const itemUrl = target.attr('data-base-url');
+    const itemUrl = target.attr('data-base-url');
     const itemId = target.attr('data-media-id');
+
+    const param = [
+      {
+        url: itemUrl,
+        organ: "flower",
+        mediaID: itemId
+      }
+    ]
 
     console.log('ID of clicked: ', itemId);;
     var currCheck = document.getElementById('check_' + itemId);
@@ -239,29 +229,19 @@ $(document).ready(() => {
     if (currCheck.classList.contains("image-check-unchecked")) {
       currCheck.classList.replace("image-check-unchecked", "image-check-checked");
       target.addClass("image-selected");
-      selectedItems.push(itemId);
+      selectedItems.push(param);
     } else if (currCheck.classList.contains("image-check-checked")) {
       currCheck.classList.replace("image-check-checked", "image-check-unchecked");
       target.removeClass("image-selected");
-      selectedItems.splice(selectedItems.indexOf(itemId), 1);
+      selectedItems.splice(selectedItems.indexOf(param), 1);
     }
   })
 
   $('#id_button').on('click', (event) => {
-    console.log("Clicked ID button.");
-    console.log("Selected item IDs: " + selectedItems);
+    console.log("Selected item IDs: ");
+    console.log(selectedItems);
     if (selectedItems.length > 0) {
-
     // TODO: display per-photo organ specifiers
-
-    /*const param = [
-      {
-        url: target.attr('data-base-url'),
-        organ: "flower",
-        mediaID: target.attr('data-media-id')
-      }
-    ]*/
-
     //identify(target, param);
 
     } else {
