@@ -346,8 +346,6 @@ app.get('/getQueue', async (req, res) => {
 // Makes a call to the Plant ID API
 app.post('/identifyPlant', async (req, res) => {
   const paramJSON = req.body.paramJSON;
-
-  //TODO: eventually user needs to input the info
   identificationAPICall(res, paramJSON);
 });
 
@@ -563,6 +561,7 @@ async function libraryApiGetAlbums(authToken) {
 // 
 async function identificationAPICall(res, paramJSON) {
   if (paramJSON.length > 5) {
+    res.status(400).send("Too many pictures selected");
     logger.error("Too many images selected for ID");
   }
 

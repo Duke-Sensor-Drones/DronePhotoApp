@@ -215,13 +215,12 @@ $(document).ready(() => {
     const itemUrl = target.attr('data-base-url');
     const itemId = target.attr('data-media-id');
 
-    const param = [
+    const param =
       {
         url: itemUrl,
         organ: "flower",
         mediaID: itemId
       }
-    ]
 
     console.log('ID of clicked: ', itemId);;
     var currCheck = document.getElementById('check_' + itemId);
@@ -242,7 +241,8 @@ $(document).ready(() => {
     console.log(selectedItems);
     if (selectedItems.length > 0) {
     // TODO: display per-photo organ specifiers
-    //identify(target, param);
+      console.log("Calling identify\n");
+      identify(selectedItems);
 
     } else {
       alert("Select at least one photo to identify.");

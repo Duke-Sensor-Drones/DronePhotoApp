@@ -58,7 +58,6 @@ function makeCard(currentID, i) {
     const name = $('<p />').addClass('card-id-common-name').text(`${j + 1}. ${currentResult.commonNames[0]}`);
     const score = $('<p />').addClass('card-id-score').text(`${currentResult.score}%`);
     span.append(name);
-    span.append(toolTip);
     span.append(score);
     list.append(span);
   });
