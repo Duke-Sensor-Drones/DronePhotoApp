@@ -39,10 +39,11 @@ function makeCard(currentID, i) {
   titleDiv.append(group);
   titleDiv.append(date);
 
-  const thumbnailUrl = `${currentID.mediaItems[0].baseUrl}=w256-h256`;
-
-  const image = $('<img />').attr('src', thumbnailUrl)
-    .addClass('img-fluid rounded thumbnail');
+  let baseURLs = [];
+  currentID.mediaItems.map(x => {
+    baseURLs.push(x.baseUrl)
+  });
+  const slideShow = makeSlideShowComponent(baseURLs);
 
   const results = currentID.results;
   const list = $('<div />').addClass('card-ids-container');
@@ -64,15 +65,87 @@ function makeCard(currentID, i) {
 
   const border = $('<div />').addClass('mdl-card__actions mdl-card--border');
   const button = $('<a />').addClass('mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect').text("Update");
+  button.on('click', (e) => {
+    console.log("Clicked");
+  })
   border.append(button);
 
   card.append(titleDiv);
-  card.append(image);
+  card.append(slideShow);
   card.append(listTitle);
   card.append(list);
   card.append(border);
 
   $('#results-container').append(card);
+}
+
+function makeSlideShowComponent(baseURLs) {
+  //let thumbnails = [];
+  let images = [];
+  let selected = 0;
+
+  const slideShowDiv = $('<div />').addClass('card-slideshow-container ');
+
+
+  baseURLs.map(x => {
+    let thumbnail = `${x}=w256-h256`;
+    const image = $('<img />').attr('src', thumbnail)
+      .addClass('img-fluid rounded thumbnail')
+      .attr('style', 'display:none');
+    
+      images.push(image);
+      slideShowDiv.append(image);
+  });
+ 
+  images[selected].attr('style', 'display:block');
+  
+  // const image = $('<img />').attr('src', thumbnails[0])
+  //   .addClass('img-fluid rounded thumbnail');
+
+  const buttonsDiv = $('<div />').addClass("card-slideshow-buttons-container");
+  const text = $('<p />').addClass('card-slideshow-text').text(`Image ${selected+1} of ${images.length}`);
+
+  const prevButton = $('<img />')
+      .attr('src', '../imgs/prev-button-img.png')
+      .addClass('card-slideshow-button')
+      .on('click', (e) => {
+        images[selected].attr('style', 'display:none');
+        selected--;
+        if(selected < 0){
+          selected = images.length-1;
+        }
+        images[selected].attr('style', 'display:block');
+        text.text(`Image ${selected+1} of ${images.length}`);
+        console.log("Prev hit, selected now at: " + selected);
+      });
+
+
+
+  const nextButton = $('<img />')
+      .attr('src', '../imgs/next-button-img.png')
+      .addClass('card-slideshow-button')
+      .on('click', (e) => {
+        images[selected].attr('style', 'display:none');
+        selected++;
+        if(selected == images.length){
+          selected = 0;
+        }
+        images[selected].attr('style', 'display:block');
+        text.text(`Image ${selected+1} of ${images.length}`);
+        console.log("Next hit, selected now at: " + selected);
+      });
+
+  buttonsDiv.append(prevButton);
+  buttonsDiv.append(text);
+  buttonsDiv.append(nextButton);
+    
+
+    //slideShowDiv.append(image);
+    slideShowDiv.append(buttonsDiv);
+
+    return slideShowDiv;
+
+
 }
 
 $(document).ready(() => {

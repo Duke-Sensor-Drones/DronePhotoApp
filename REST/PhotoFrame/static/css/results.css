@@ -15,6 +15,29 @@
     margin: 0 0 0;
 }
 
+.card-slideshow-container {
+    display: flex;
+    flex-direction: column;
+}
+
+/* cotnainer that holds the next/prev buttons for the slideshow */
+.card-slideshow-buttons-container {
+    display: flex;
+    flex-direction: row;
+}
+
+.card-slideshow-button {
+  cursor: pointer;
+  max-width: 25px;
+  max-height: 25px;
+  flex: 1;
+}
+
+.card-slideshow-text {
+    flex: 4;
+    text-align: center;
+}
+
 /* container for the list of common name options */
 .card-ids-container {
     display: flex;
