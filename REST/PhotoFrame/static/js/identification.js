@@ -254,7 +254,7 @@ $(document).ready(() => {
     console.log(selectedItems);
     if (selectedItems.length > 0) {
     // TODO: display per-photo organ specifiers
-      console.log("Calling identify\n");
+      callToast('Identification request sent');
       identify(selectedItems);
     } else {
       alert("Select at least one photo to identify.");
