@@ -152,9 +152,11 @@ $.ajax({
   success: (data) => {
     console.log('API hit');
     console.log(data);
+    callToast('Successful identification');
   },
   error: (data) => {
     handleError('Couldn\'t import album', data);
+    callToast('Error occurred: unsuccessful identification');
   }
 });
 }
@@ -190,6 +192,17 @@ $.ajax({
     handleError('Couldn\'t get identified info for this album', data);
   }
 });
+}
+
+function callToast(message) {
+  console.log("toast coming: " + message);
+  var x = $('#id-toast');
+  x.addClass("show");
+  x.text(message)
+  setTimeout(function(){ 
+    x.removeClass("show")
+    //x.className = x.className.replace("show", "toast show"); 
+  }, 3000);
 }
 
 $(document).ready(() => {
@@ -243,7 +256,6 @@ $(document).ready(() => {
     // TODO: display per-photo organ specifiers
       console.log("Calling identify\n");
       identify(selectedItems);
-
     } else {
       alert("Select at least one photo to identify.");
     }
