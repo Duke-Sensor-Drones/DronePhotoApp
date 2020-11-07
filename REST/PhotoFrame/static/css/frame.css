@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
- .thumbnail {
+ /* .thumbnail {
     height: 200px;
     padding: 3px;
-  }
+  } */
   
   #startSlideshow {
     z-index: 900;

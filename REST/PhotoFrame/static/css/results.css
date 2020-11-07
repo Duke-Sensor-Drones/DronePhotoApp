@@ -77,3 +77,83 @@
 
 
 /* RESULTS MODAL THAT POPS UP */
+.modal-background {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  padding-top: 100px; /* Location of the box */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+}
+
+/*  */
+.item-row {
+    display: flex;
+    flex-direction: row;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.item-label {
+    font-weight: bold;
+    flex: 1;
+    text-align: right;
+    margin: 0px;
+    padding-right: 5px;
+}
+
+.item-value {
+    flex: 3;
+    margin: 0px;
+}
+
+.modal-results-container {
+    display: flex;
+    flex-direction: column;
+    height: 300px;
+    overflow: scroll;
+    overflow-y: scroll;
+}
+
+/* Contains a column thats a row of info about the result,
+a column with the score, and a column with a Delete button */
+.modal-result-row {
+    display: flex;
+    flex-direction: row;
+}
+
+.modal-result-info-column {
+    flex: 4;
+}
+
+.modal-result-score-column {
+    flex: 1;
+}
+
+.modal-result-button-column {
+    flex: 1;
+}
+
+.delete-button {
+    background-color: red;
+    color: white;
+}
+
+.delete-button:hover {
+    background-color: lightcoral;
+}
