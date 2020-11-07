@@ -9,6 +9,8 @@
     font-weight: bold;
 }
 
+/* CARDS */
+
 /* Encompasses the group id and the date*/
 .card-title{
     font-size: 16px;
@@ -72,3 +74,6 @@
     flex-direction: row;
     flex-wrap: wrap;
 }
+
+
+/* RESULTS MODAL THAT POPS UP */

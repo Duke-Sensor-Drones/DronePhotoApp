@@ -256,6 +256,11 @@ $(document).ready(() => {
     // TODO: display per-photo organ specifiers
       callToast('Identification request sent');
       identify(selectedItems);
+      var selectedTargets = document.getElementsByClassName("image-check-checked");
+      $.each(selectedTargets, (i, target) => {
+        var t = $(target);
+        t.classList.replace("image-check-checked", "image-check-unchecked");
+      })
     } else {
       alert("Select at least one photo to identify.");
     }
