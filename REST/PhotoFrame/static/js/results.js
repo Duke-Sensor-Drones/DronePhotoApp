@@ -21,6 +21,26 @@ function loadIdentified() {
     });
   }
 
+  function deleteResult(groupID, resultID){
+    console.log(`Group ID: ${groupID} Result id: ${resultID}`);
+    $.ajax({
+    type: 'POST',
+    url: '/deleteResult',
+    dataType: 'json',
+    data: {
+      groupID: groupID,
+      resultID: resultID
+    },
+    success: (data) => {
+      console.log("Success Deleting: " + resultID);
+      console.log(data);
+    },
+    error: (data) => {
+      handleError('Error trying to delete a result: ', data.message);
+    }
+  });
+  }
+
   function showCards(identifiedResults){
     $('#results-container').empty();
 
@@ -174,8 +194,12 @@ function makeSlideShowComponent(baseURLs) {
     modalContent.append(border);
 
     const resultsContainer = $('<div />').addClass('modal-results-container');
-    currentID.results.map(currentResult => {
+    currentID.results.map((currentResult, index) => {
       let resultRow =$('<div />').addClass('modal-result-row');
+
+      let resultRankColumn = $('<div />').addClass('modal-result-rank-column');
+      let rank = $('<p />').text(index+1);
+      resultRankColumn.append(rank);
 
       let resultInfoColumn = $('<div />').addClass('modal-result-info-column');
       let commonNameDiv = makeCommonNameRow(currentResult);
@@ -188,15 +212,21 @@ function makeSlideShowComponent(baseURLs) {
       resultInfoColumn.append(familyRow);
 
       let scoreColumn = $('<div />').addClass('modal-result-score-column');
-      let scoreTitle = $('<p />').addClass('bold-text').text('Score');
-      let score = $('<p />').text(currentResult.score);
-      scoreColumn.append(scoreTitle);
+      let score = $('<p />').text(`${currentResult.score}%`);
       scoreColumn.append(score);
 
       let buttonColumn = $('<div />').addClass('modal-result-button-column');
-      let button = $('<button />').text('Delete').addClass('delete-button mdl-button mdl-js-button mdl-button--raised');
+      let button = $('<button />')
+        .text('Delete')
+        .addClass('delete-button mdl-button mdl-js-button mdl-button--raised')
+        .on('click', (e) => {
+          
+          deleteResult(currentID.groupID, currentResult.id)
+        });
+  
       buttonColumn.append(button);
 
+      resultRow.append(resultRankColumn);
       resultRow.append(resultInfoColumn);
       resultRow.append(scoreColumn);
       resultRow.append(buttonColumn);

@@ -26,6 +26,7 @@
 .card-slideshow-buttons-container {
     display: flex;
     flex-direction: row;
+    margin-top: 10px;
 }
 
 .card-slideshow-button {
@@ -137,15 +138,28 @@ a column with the score, and a column with a Delete button */
     flex-direction: row;
 }
 
+.modal-result-rank-column {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+}
+
 .modal-result-info-column {
-    flex: 4;
+    flex: 6;
 }
 
 .modal-result-score-column {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     flex: 1;
 }
 
 .modal-result-button-column {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     flex: 1;
 }
 

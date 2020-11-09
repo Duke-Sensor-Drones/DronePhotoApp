@@ -360,6 +360,14 @@ app.get('/getIdentified', async (req, res) => {
   getAllIdentified(res, req.user.token);
 });
 
+app.post('/deleteResult', async (req, res) => {
+  const paramJSON = req.body;
+  const groupID = req.body.groupID;
+  const resultID = req.body.resultID;
+  deleteResult(groupID, resultID, res);
+  // identificationAPICall(res, paramJSON);
+});
+
 // Start the server
 server.listen(config.port, () => {
   console.log(`App listening on port ${config.port}`);
@@ -715,10 +723,29 @@ async function getAllIdentified(res, authToken){
     res.status(200).send(result);
   } catch(error){
     res.status(400).send(error);
-    logger.error('Error getting identified info from the storage');
+    logger.error('Error getting identified info from the storage. Possiblt need to delete persist-groups-identified and persist-items-groups-identified. NOTE: deleting these will wipe identified result memory');
   }
-  
+}
 
+async function deleteResult(groupID, resultID, res){
+  try {
+    let key = groupPrefix + groupID;
+    let resultGotten = await groupsIdentifiedStorage.getItem(key);
+    let results = resultGotten.results;
+    let newResults = []
+    results.map(x => {
+      if(x.id != resultID){
+        newResults.push(x);
+      }
+    })
+
+    resultGotten.results = newResults
+    await groupsIdentifiedStorage.setItem(key, resultGotten)
+    res.status(200).send(resultGotten);
+  } catch(error){
+    res.status(400).send(error);
+    logger.error('Error deleting a result entry');
+  }
 }
 
 
