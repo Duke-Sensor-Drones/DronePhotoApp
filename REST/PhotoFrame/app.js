@@ -632,7 +632,12 @@ async function identificationAPICall(res, paramJSON) {
 
     //Incremenet the identifier
     await groupsIdentifiedStorage.setItem(groupIdCounter, groupID + 1);
-    res.status(200).send(toSave);
+
+    let toReturn = {
+      ...toSave,
+      requestsLeft: resultJSON.remainingIdentificationRequests
+    }
+    res.status(200).send(toReturn);
 
   } catch (error) {
     res.status(400).send({error});
