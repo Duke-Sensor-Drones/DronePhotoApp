@@ -361,10 +361,11 @@ app.get('/getIdentified', async (req, res) => {
 });
 
 app.post('/deleteResult', async (req, res) => {
+  const authToken = req.user.token;
   const paramJSON = req.body;
   const groupID = req.body.groupID;
   const resultID = req.body.resultID;
-  deleteResult(groupID, resultID, res);
+  deleteResult(authToken, groupID, resultID, res);
   // identificationAPICall(res, paramJSON);
 });
 
@@ -732,24 +733,53 @@ async function getAllIdentified(res, authToken){
   }
 }
 
-async function deleteResult(groupID, resultID, res){
+async function getSingleIdentified(authToken, groupID){
+  try{
+    const key = groupPrefix + groupID;
+    let identified = await groupsIdentifiedStorage.getItem(key);
+
+    let returned = await getMediaItemsAPICall(authToken, identified.mediaIDs);
+
+    let save = {
+        ...identified,
+        mediaItems: returned.mediaItems,
+      }
+    
+    let result = {
+      errors: returned.errors,
+      identification: save
+    }
+
+    return result
+  } catch(error){
+    logger.error('Error getting single identified info from the storage: ', error);
+  }
+}
+
+
+async function deleteResult(authToken, groupID, resultID, res){
   try {
     let key = groupPrefix + groupID;
     let resultGotten = await groupsIdentifiedStorage.getItem(key);
     let results = resultGotten.results;
     let newResults = []
     results.map(x => {
+      // omitting the deleted result
       if(x.id != resultID){
         newResults.push(x);
       }
     })
 
-    resultGotten.results = newResults
-    await groupsIdentifiedStorage.setItem(key, resultGotten)
-    res.status(200).send(resultGotten);
+    // saving updated results
+    resultGotten.results = newResults;
+    await groupsIdentifiedStorage.setItem(key, resultGotten);
+
+    let finalResult = await getSingleIdentified(authToken, groupID);
+    logger.info(finalResult);
+    res.status(200).send(finalResult.identification);
   } catch(error){
     res.status(400).send(error);
-    logger.error('Error deleting a result entry');
+    logger.error('Error deleting a result entry: ', error);
   }
 }
 

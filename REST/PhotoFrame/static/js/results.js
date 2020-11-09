@@ -32,8 +32,7 @@ function loadIdentified() {
       resultID: resultID
     },
     success: (data) => {
-      console.log("Success Deleting: " + resultID);
-      console.log(data);
+      refreshResults(groupID, data);
     },
     error: (data) => {
       handleError('Error trying to delete a result: ', data.message);
@@ -47,16 +46,23 @@ function loadIdentified() {
     let reverse = identifiedResults.reverse()
 
     $.each(reverse, (i, currentID) => {
-        makeCard(currentID, i);
+      console.log(i, currentID);
+        const card = $('<div />').addClass('demo-card-square mdl-card mdl-shadow--2dp card')
+          .attr('card-group-id', currentID.groupID);
+        const content = makeCardContent(currentID);
+        card.append(content);
+        $('#results-container').append(card);
     });
   }
 
-function makeCard(currentID, i) {
-  const card = $('<div />').addClass('demo-card-square mdl-card mdl-shadow--2dp card');
-  
-  const topHalf = makeTopHalfOfCard(currentID);
+  // returns a div of card content
+function makeCardContent(identificationInfo) {
+  console.log("Make card content input: ", identificationInfo);
+  console.log(identificationInfo);
+  const cardContent = $('<div />');
+  const topHalf = makeTopHalfOfCard(identificationInfo);
 
-  const results = currentID.results;
+  const results = identificationInfo.results;
   const list = $('<div />').addClass('card-ids-container');
 
   const listTitle = $('<div />').addClass('card-id-row');
@@ -78,16 +84,16 @@ function makeCard(currentID, i) {
   const button = $('<a />').addClass('mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect').text("Update");
   button.on('click', (e) => {
     console.log("Clicked");
-      displayResultModal(currentID);
+      displayResultModal(identificationInfo);
   })
   border.append(button);
 
-  card.append(topHalf);
-  card.append(listTitle);
-  card.append(list);
-  card.append(border);
+  cardContent.append(topHalf);
+  cardContent.append(listTitle);
+  cardContent.append(list);
+  cardContent.append(border);
 
-  $('#results-container').append(card);
+  return cardContent;
 }
 
 //returns an element that contains the group id, date added, and slideshow
@@ -176,9 +182,18 @@ function makeSlideShowComponent(baseURLs) {
 
 }
 
+function refreshResults(groupID, idInfo){
+  console.log('refreshing');
+  let target = $(document.getElementById(`card-group-id-${groupID}`)); 
+  target.empty();
+  // const content = makeCardContent(idInfo);
+  // target.append(content);
+
+  displayResultModal(idInfo);
+}
+
 
   function displayResultModal(currentID) {
-    console.log(currentID);
     $('#results-modal-content').empty();
     var modalContainer = $(document.getElementById('results-modal'));
     modalContainer.attr('style', 'display:block');
@@ -221,7 +236,7 @@ function makeSlideShowComponent(baseURLs) {
         .addClass('delete-button mdl-button mdl-js-button mdl-button--raised')
         .on('click', (e) => {
           
-          deleteResult(currentID.groupID, currentResult.id)
+          deleteResult(currentID.groupID, currentResult.id);
         });
   
       buttonColumn.append(button);
