@@ -11,18 +11,19 @@
   <div class="mdl-layout-spacer"></div>
   <div style="display: flex; align-items: center; padding-right: 20px;">
     <button class="mdl-button raised id-button" id="id_button">Identify Selected Photos</button>
-    <dialog class="mdl-dialog">
-      <h4 class="mdl-dialog__title">Allow data collection?</h4>
-      <div class="mdl-dialog__content">
-        <p>
-          Allowing us to collect data will let us get you the information you want faster.
-        </p>
+    <div id="organ-modal" class="modal">
+      <!-- Modal content -->
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>Select plant organ for selected photos</h3>
+        <p>Choose the best match for each image's contents.</p>
+        <table id="organ-select-table"></table>
+        <div style="display: flex; flex-direction: row; width:auto">
+          <div class="mdl-layout-spacer"></div>
+          <button class="mdl-button raised send-button" id="send-button"><i class="material-icons" style="padding-right:8px">send</i>Confirm organs and send</button>
+        </div>
       </div>
-      <div class="mdl-dialog__actions">
-        <button type="button" class="mdl-button">Agree</button>
-        <button type="button" class="mdl-button close">Disagree</button>
-      </div>
-    </dialog>
+    </div>
   </div>
 </div>
 <div class="mdl-layout mdl-js-layout mdl-layout--fixed-drawer">

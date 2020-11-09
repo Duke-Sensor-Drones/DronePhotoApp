@@ -1,5 +1,3 @@
-var selectedItems = [];
-
 function displayAlbumList() {
   // Define view that has list of albums on left, then a pane of images on right that can be selected
   hideError();
@@ -195,7 +193,12 @@ $.ajax({
 $(document).ready(() => {
   // Load the list of albums from the backend when the page is ready.
   displayAlbumList();
-  
+  var selectedItems = [];
+  // Get the modal
+  var modal = document.getElementById("organ-modal");
+  // Get the <span> element that closes the modal
+  var span = document.getElementsByClassName("close")[0];
+
   $('#identification-albums').on('click', '.id-album-item', (event) => {
     console.log("Album target");
     console.log(event);
@@ -241,11 +244,95 @@ $(document).ready(() => {
     console.log("Selected item IDs: ");
     console.log(selectedItems);
     if (selectedItems.length > 0) {
-    // TODO: display per-photo organ specifiers
-    //identify(target, param);
-
+    modal.style.display = "block";
+    displayOrganSelectors(selectedItems);
     } else {
       alert("Select at least one photo to identify.");
     }
   });
+
+  $('#send-button').on('click', (event) => {
+    //check that each item has a selected organ (with at least one non-other), update JSON model, do identify() call
+    var non_other = false;
+    $.each(selectedItems, (i, item) => {
+      const radio_options = document.querySelectorAll('input[name=organ_' + item[0].mediaID + ']');
+      var selected = false;
+      $.each(radio_options, (i, option) => {
+        if (option.checked) {
+          selected = true;
+          if (option.value != "Other") {
+            non_other = true;
+          }
+        }
+      });
+      if (!selected) {
+        alert("Please select an organ for every photo.");
+        return false;
+      }
+    });
+    if (!non_other) {
+      alert("At least one photo must be depicting a defined organ (not \"Other\")");
+    }
+    $.each(selectedItems, (i, item) => {
+      const radio_options = document.querySelectorAll('input[name=organ_' + item[0].mediaID + ']');
+      $.each(radio_options, (i, option) => {
+        if (option.checked) {
+          item[0].organ = option.value.toLowerCase();
+        }
+      });
+    });
+    console.log(selectedItems);
+    //identify(selectedItems);
+    //window.location.href = "/results";
+  });
+
+  // When the user clicks on <span> (x), close the modal
+  span.onclick = function() {
+    modal.style.display = "none";
+  }
+
+  // When the user clicks anywhere outside of the modal, close it
+  window.onclick = function(event) {
+    if (event.target == modal) {
+      modal.style.display = "none";
+    }
+  }
 });
+
+function displayOrganSelectors(selectedItems) {
+  const organs = ["Leaf", "Flower", "Bark", "Fruit", "Other"];
+  $('#organ-select-table').empty();
+  $.each(selectedItems, (i, item) => {
+    const tableRow = $('<tr />');
+
+    const thumbnailUrl = `${item[0].url}=w128-h128`;
+    const thumbnailImage = $('<img />')
+                               .attr('src', thumbnailUrl)
+                               .addClass('img-fluid rounded thumbnail')
+                               .attr('style', "height: 128px;");
+    tableRow.append(thumbnailImage);
+
+    for (var i = 0; i < organs.length; i++) {
+      const rowOption = $('<td />')
+        .attr('style', "padding: 15px;");
+      tableRow.append(rowOption);
+      const label = $('<label />')
+        .attr('class', "mdl-radio mdl-js-radio mdl-js-ripple-effect")
+        .attr('for', "option_" + item[0].mediaID + "_" + i);
+      rowOption.append(label);
+      const input = $('<input />')
+        .attr('type', "radio")
+        .attr('id', "option_" + item[0].mediaID + "_" + i)
+        .attr('name', "organ_" + item[0].mediaID)
+        .attr('value', organs[i])
+        .attr('class', "mdl-radio__button");
+      label.append(input);
+      const span = $('<span />')
+        .attr('class', "mdl-radio__label")
+        .text(organs[i]);
+      label.append(span);
+    }
+    $('#organ-select-table').append(tableRow);
+    componentHandler.upgradeDom();
+  });
+}
