@@ -161,7 +161,6 @@ $.ajax({
 
 // takes in a media item ID and hits the google photos API
 // to get the rest of the info for the image
-// TODO: this will probs be moved to another page
 function getMediaItem(mediaItemID) {
 $.ajax({
   type: 'POST',
@@ -204,12 +203,13 @@ function callToast(message) {
 }
 
 function displayOrganSelectors(selectedItems) {
+  console.log(selectedItems[0]);
   const organs = ["Leaf", "Flower", "Bark", "Fruit", "Other"];
   $('#organ-select-table').empty();
   $.each(selectedItems, (i, item) => {
     const tableRow = $('<tr />');
 
-    const thumbnailUrl = `${item[0].url}=w128-h128`;
+    const thumbnailUrl = `${item.url}=w128-h128`;
     const thumbnailImage = $('<img />')
                                .attr('src', thumbnailUrl)
                                .addClass('img-fluid rounded thumbnail')
@@ -222,12 +222,12 @@ function displayOrganSelectors(selectedItems) {
       tableRow.append(rowOption);
       const label = $('<label />')
         .attr('class', "mdl-radio mdl-js-radio mdl-js-ripple-effect")
-        .attr('for', "option_" + item[0].mediaID + "_" + i);
+        .attr('for', "option_" + item.mediaID + "_" + i);
       rowOption.append(label);
       const input = $('<input />')
         .attr('type', "radio")
-        .attr('id', "option_" + item[0].mediaID + "_" + i)
-        .attr('name', "organ_" + item[0].mediaID)
+        .attr('id', "option_" + item.mediaID + "_" + i)
+        .attr('name', "organ_" + item.mediaID)
         .attr('value', organs[i])
         .attr('class', "mdl-radio__button");
       label.append(input);
@@ -291,8 +291,6 @@ $(document).ready(() => {
   })
 
   $('#id_button').on('click', (event) => {
-    console.log("Selected item IDs: ");
-    console.log(selectedItems);
     if (selectedItems.length > 0) {
       modal.style.display = "block";
       displayOrganSelectors(selectedItems);
@@ -305,7 +303,7 @@ $(document).ready(() => {
     //check that each item has a selected organ (with at least one non-other), update JSON model, do identify() call
     var non_other = false;
     $.each(selectedItems, (i, item) => {
-      const radio_options = document.querySelectorAll('input[name=organ_' + item[0].mediaID + ']');
+      const radio_options = document.querySelectorAll('input[name=organ_' + item.mediaID + ']');
       var selected = false;
       $.each(radio_options, (i, option) => {
         if (option.checked) {
@@ -322,23 +320,20 @@ $(document).ready(() => {
     });
     if (!non_other) {
       alert("At least one photo must be depicting a defined organ (not \"Other\")");
-    }
-    $.each(selectedItems, (i, item) => {
-      const radio_options = document.querySelectorAll('input[name=organ_' + item[0].mediaID + ']');
-      $.each(radio_options, (i, option) => {
-        if (option.checked) {
-          item[0].organ = option.value.toLowerCase();
-        }
+    } else {
+      $.each(selectedItems, (i, item) => {
+        const radio_options = document.querySelectorAll('input[name=organ_' + item.mediaID + ']');
+        $.each(radio_options, (i, option) => {
+          if (option.checked) {
+            item.organ = option.value.toLowerCase();
+          }
+        });
       });
-    });
-    console.log(selectedItems);
-    callToast('Identification request sent');
-    //identify(selectedItems);
-    var selectedTargets = document.getElementsByClassName("image-check-checked");
-    $.each(selectedTargets, (i, target) => {
-      var t = $(target);
-      t.classList.replace("image-check-checked", "image-check-unchecked");
-    })
+      console.log(selectedItems);
+      callToast('Identification request sent');
+      identify(selectedItems);
+      modal.style.display = "none";
+    }
   });
 
   // When the user clicks on <span> (x), close the modal
