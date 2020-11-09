@@ -7,8 +7,7 @@ function loadIdentified() {
       success: (data) => {
         // Queue has been loaded. Display the media items as a grid on screen.
         hideLoadingDialog();
-        
-        console.log(data);
+
         if(data.errors.length > 0){
             handleError('Could not load some of the identification results', data.errors);
         }
@@ -22,7 +21,6 @@ function loadIdentified() {
   }
 
   function deleteResult(groupID, resultID){
-    console.log(`Group ID: ${groupID} Result id: ${resultID}`);
     $.ajax({
     type: 'POST',
     url: '/deleteResult',
@@ -32,7 +30,7 @@ function loadIdentified() {
       resultID: resultID
     },
     success: (data) => {
-      refreshResults(groupID, data);
+      refreshCardAndModal(groupID, data);
     },
     error: (data) => {
       handleError('Error trying to delete a result: ', data.message);
@@ -46,9 +44,8 @@ function loadIdentified() {
     let reverse = identifiedResults.reverse()
 
     $.each(reverse, (i, currentID) => {
-      console.log(i, currentID);
         const card = $('<div />').addClass('demo-card-square mdl-card mdl-shadow--2dp card')
-          .attr('card-group-id', currentID.groupID);
+          .attr('id', `card-group-id-${currentID.groupID}`);
         const content = makeCardContent(currentID);
         card.append(content);
         $('#results-container').append(card);
@@ -57,8 +54,6 @@ function loadIdentified() {
 
   // returns a div of card content
 function makeCardContent(identificationInfo) {
-  console.log("Make card content input: ", identificationInfo);
-  console.log(identificationInfo);
   const cardContent = $('<div />');
   const topHalf = makeTopHalfOfCard(identificationInfo);
 
@@ -83,7 +78,6 @@ function makeCardContent(identificationInfo) {
   const border = $('<div />').addClass('mdl-card__actions mdl-card--border');
   const button = $('<a />').addClass('mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect').text("Update");
   button.on('click', (e) => {
-    console.log("Clicked");
       displayResultModal(identificationInfo);
   })
   border.append(button);
@@ -150,7 +144,6 @@ function makeSlideShowComponent(baseURLs) {
         }
         images[selected].attr('style', 'display:block');
         text.text(`Image ${selected+1} of ${images.length}`);
-        console.log("Prev hit, selected now at: " + selected);
       });
 
 
@@ -166,7 +159,6 @@ function makeSlideShowComponent(baseURLs) {
         }
         images[selected].attr('style', 'display:block');
         text.text(`Image ${selected+1} of ${images.length}`);
-        console.log("Next hit, selected now at: " + selected);
       });
 
   buttonsDiv.append(prevButton);
@@ -182,12 +174,11 @@ function makeSlideShowComponent(baseURLs) {
 
 }
 
-function refreshResults(groupID, idInfo){
-  console.log('refreshing');
-  let target = $(document.getElementById(`card-group-id-${groupID}`)); 
-  target.empty();
-  // const content = makeCardContent(idInfo);
-  // target.append(content);
+// updates the card and modal
+function refreshCardAndModal(groupID, idInfo){
+  $(`#card-group-id-${groupID}`).empty();
+  const content = makeCardContent(idInfo);
+  $(`#card-group-id-${groupID}`).append(content);
 
   displayResultModal(idInfo);
 }
@@ -200,6 +191,8 @@ function refreshResults(groupID, idInfo){
 
     var modalContent = $(document.getElementById('results-modal-content'));
 
+    // create exit button
+    const exitButton = $('<span />');
     // Create header with group id, date, and slideshow
     let header = makeTopHalfOfCard(currentID);
     modalContent.append(header);
@@ -293,5 +286,8 @@ String.prototype.toProperCase = function () {
 
 $(document).ready(() => {
     loadIdentified();
-    
+
+    $('#results-modal-close').on('click', (e) => {
+      $('#results-modal').attr('style', 'display: hidden');
     });
+});
