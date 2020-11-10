@@ -96,6 +96,7 @@ const groupPrefix = "group";  // every result saved should have this prefix
 const mediaItemsIdentifiedStorage = persist.create({ dir: 'persist-items-groups-identified/' });
 mediaItemsIdentifiedStorage.init();
 
+const remainingIDsKey = "remainingPlantNetIDs";
 
 // Set up OAuth 2.0 authentication through the passport.js library.
 const passport = require('passport');
@@ -184,9 +185,9 @@ app.use((req, res, next) => {
   if (req.user && req.user.profile && req.user.profile.photos) {
     res.locals.avatarUrl = req.user.profile.photos[0].value;
   }
+
   next();
 });
-
 
 // GET request to the root.
 // Display the login screen if the user is not logged in yet, otherwise the
@@ -244,7 +245,10 @@ app.get('/results', (req, res) => {
   renderIfAuthenticated(req, res, 'pages/results');
 });
 
-
+app.get('/getRemainingCalls', async (req, res) => {
+  const remIDs = await storage.getItem(remainingIDsKey);
+  res.status(200).send([remIDs]);
+});
 
 // Handles selections from the album page where an album ID is submitted.
 // The user has selected an album and wants to load photos from an album
@@ -638,6 +642,8 @@ async function identificationAPICall(res, paramJSON) {
       ...toSave,
       requestsLeft: resultJSON.remainingIdentificationRequests
     }
+
+    await storage.setItem(remainingIDsKey, resultJSON.remainingIdentificationRequests);
     res.status(200).send(toReturn);
 
   } catch (error) {

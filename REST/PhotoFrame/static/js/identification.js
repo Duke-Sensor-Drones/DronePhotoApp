@@ -242,6 +242,7 @@ function displayOrganSelectors(selectedItems) {
 }
 
 $(document).ready(() => {
+  displayRemainingAPICalls();
   // Load the list of albums from the backend when the page is ready.
   displayAlbumList();
   var selectedItems = [];

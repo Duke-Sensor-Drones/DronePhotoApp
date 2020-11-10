@@ -286,6 +286,7 @@ String.prototype.toProperCase = function () {
 
 $(document).ready(() => {
     loadIdentified();
+    displayRemainingAPICalls();
 
     $('#results-modal-close').on('click', (e) => {
       $('#results-modal').attr('style', 'display: hidden');
