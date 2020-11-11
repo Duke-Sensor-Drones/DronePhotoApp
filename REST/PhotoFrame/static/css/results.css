@@ -41,6 +41,11 @@
     text-align: center;
 }
 
+.card-slideshow-thumbnail {
+    width: 256;
+    align-self: center;
+}
+
 /* container for the list of common name options */
 .card-ids-container {
     display: flex;
@@ -112,7 +117,7 @@
 
 .item-label {
     font-weight: bold;
-    flex: 1;
+    flex: 2;
     text-align: right;
     margin: 0px;
     padding-right: 5px;

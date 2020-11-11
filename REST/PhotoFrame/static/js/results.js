@@ -76,7 +76,7 @@ function makeCardContent(identificationInfo) {
   });
 
   const border = $('<div />').addClass('mdl-card__actions mdl-card--border');
-  const button = $('<a />').addClass('mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect').text("Update");
+  const button = $('<a />').addClass('mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect').text("View More");
   button.on('click', (e) => {
       displayResultModal(identificationInfo);
   })
@@ -121,7 +121,7 @@ function makeSlideShowComponent(baseURLs) {
   baseURLs.map(x => {
     let thumbnail = `${x}=w256-h256`;
     const image = $('<img />').attr('src', thumbnail)
-      .addClass('img-fluid rounded thumbnail')
+      .addClass('img-fluid rounded card-slideshow-thumbnail')
       .attr('style', 'display:none');
     
       images.push(image);
