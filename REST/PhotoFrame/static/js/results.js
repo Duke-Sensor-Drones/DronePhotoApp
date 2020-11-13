@@ -38,6 +38,28 @@ function loadIdentified() {
   });
   }
 
+  function saveUserResult(groupID, scientificName, family, genus, commonNames){
+    $.ajax({
+    type: 'POST',
+    url: '/saveUserResult',
+    dataType: 'json',
+    data: {
+      groupID: groupID,
+      scientificName: scientificName,
+      family: family,
+      genus: genus,
+      commonNames: commonNames
+    },
+    success: (data) => {
+      console.log(data);
+      refreshCardAndModal(groupID, data);
+    },
+    error: (data) => {
+      handleError('Error trying to delete a result: ', data.message);
+    }
+  });
+  }
+
   function showCards(identifiedResults){
     $('#results-container').empty();
 
@@ -57,7 +79,7 @@ function makeCardContent(identificationInfo) {
   const cardContent = $('<div />');
   const topHalf = makeTopHalfOfCard(identificationInfo);
 
-  const results = identificationInfo.results;
+  const results = identificationInfo.apiResults;
   const list = $('<div />').addClass('card-ids-container');
 
   const listTitle = $('<div />').addClass('card-id-row');
@@ -205,7 +227,7 @@ function refreshCardAndModal(groupID, idInfo){
       modalContent.append(addIDbutton);
 
     // Create manual entry div, initially hidden
-    let manualEntry = makeManualEntryDiv();
+    let manualEntry = makeManualEntryDiv(currentID.groupID);
     modalContent.append(manualEntry);
 
     // Create section with All ids
@@ -213,7 +235,7 @@ function refreshCardAndModal(groupID, idInfo){
     modalContent.append(border);
 
     const resultsContainer = $('<div />').addClass('modal-results-container');
-    currentID.results.map((currentResult, index) => {
+    currentID.apiResults.map((currentResult, index) => {
       let resultRow =$('<div />').addClass('modal-result-row');
 
       // column with the ranking (1, 2, ...)
@@ -287,7 +309,7 @@ function makeRow(titleText, valueText){
   return div;
 }
 
-function makeManualEntryDiv(){
+function makeManualEntryDiv(groupID){
   const entriesRow = $('<div />').addClass('modal-manual-entry-col-container');
 
   // make column 1 which has a bunch of short text inputs
@@ -324,6 +346,7 @@ function makeManualEntryDiv(){
                             const family = document.getElementById('familyUserInput').value;
                             const namesString = document.getElementById('commonNamesUserInput').value;
                             const commonNamesArr = namesString.split("\n");
+                            saveUserResult(groupID, sciName, family, genus, commonNamesArr);
                             $('#manualEntryContainer').attr('style', 'display: none');
                         });
   const cancelButton = $('<button />')

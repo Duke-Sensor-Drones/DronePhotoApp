@@ -349,25 +349,29 @@ app.post('/identifyPlant', async (req, res) => {
   identificationAPICall(res, paramJSON);
 });
 
-// Makes a call to the google photos API with a media item ID
-// returns all the info that google photos has associated with
-// that ID
-// app.post('/getMediaItem', async (req, res) => {
-//   getMediaItemAPICall(res, req.user.token, req.body.mediaItemID);
-// });
-
 app.get('/getIdentified', async (req, res) => {
   getAllIdentified(res, req.user.token);
 });
 
+// delete a result for a group
 app.post('/deleteResult', async (req, res) => {
   const authToken = req.user.token;
-  const paramJSON = req.body;
   const groupID = req.body.groupID;
   const resultID = req.body.resultID;
   deleteResult(authToken, groupID, resultID, res);
-  // identificationAPICall(res, paramJSON);
 });
+
+// saves a users entered result
+
+app.post('/saveUserResult', async (req, res) => {
+  const authToken = req.user.token;
+  const groupID = req.body.groupID;
+  const sciName = req.body.scientificName;
+  const family = req.body.family;
+  const commonNames = req.body.commonNames;
+  const genus = req.body.genus;
+  saveResult(authToken, groupID, sciName, commonNames, family, genus, res);
+})
 
 // Start the server
 server.listen(config.port, () => {
@@ -588,7 +592,7 @@ async function identificationAPICall(res, paramJSON) {
         scientificName: x.species.scientificNameWithoutAuthor,
         commonNames: x.species.commonNames,
         family: x.species.family.scientificNameWithoutAuthor,
-        genus: x.species.genus.scientificNameWithoutAuthor,
+        genus: x.species.genus.scientificNameWithoutAuthor
       }
 
       resultsToSave.push(indiv);
@@ -615,7 +619,9 @@ async function identificationAPICall(res, paramJSON) {
       date: dateString,
       mediaIDs: mediaIDs,
       groupID: groupID,
-      results: resultsToSave,
+      apiResults: resultsToSave,
+      userEnteredResults: [],
+      uniqueCounter: 0
     };
     // Save to the groups identified storage
     let key = groupPrefix + String(groupID)
@@ -635,7 +641,10 @@ async function identificationAPICall(res, paramJSON) {
     await groupsIdentifiedStorage.setItem(groupIdCounter, groupID + 1);
 
     let toReturn = {
-      ...toSave,
+      date: toSave.date,
+      mediaIDs: toSave.mediaIDs,
+      groupID: toSave.groupID,
+      results: toSave.results,
       requestsLeft: resultJSON.remainingIdentificationRequests
     }
     res.status(200).send(toReturn);
@@ -761,7 +770,7 @@ async function deleteResult(authToken, groupID, resultID, res){
   try {
     let key = groupPrefix + groupID;
     let resultGotten = await groupsIdentifiedStorage.getItem(key);
-    let results = resultGotten.results;
+    let results = resultGotten.apiResults;
     let newResults = []
     results.map(x => {
       // omitting the deleted result
@@ -771,7 +780,36 @@ async function deleteResult(authToken, groupID, resultID, res){
     })
 
     // saving updated results
-    resultGotten.results = newResults;
+    resultGotten.apiResults = newResults;
+    await groupsIdentifiedStorage.setItem(key, resultGotten);
+
+    let finalResult = await getSingleIdentified(authToken, groupID);
+    logger.info(finalResult);
+    res.status(200).send(finalResult.identification);
+  } catch(error){
+    res.status(400).send(error);
+    logger.error('Error deleting a result entry: ', error);
+  }
+}
+
+async function saveResult(authToken, groupID, scientificName, commonNames, family, genus, res) {
+  try {
+    let key = groupPrefix + groupID;
+    let resultGotten = await groupsIdentifiedStorage.getItem(key);
+    let results = resultGotten.userEnteredResults;
+
+    let userResult = {
+      id: resultGotten.uniqueCounter,
+      scientificName: scientificName,
+      commonNames: commonNames,
+      family: family,
+      genus: genus
+    }
+
+    results.push(userResult)
+    resultGotten.uniqueCounter++;
+
+    // saving updated results
     await groupsIdentifiedStorage.setItem(key, resultGotten);
 
     let finalResult = await getSingleIdentified(authToken, groupID);
