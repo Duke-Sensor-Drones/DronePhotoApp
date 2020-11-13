@@ -191,11 +191,18 @@ function refreshCardAndModal(groupID, idInfo){
 
     var modalContent = $(document.getElementById('results-modal-content'));
 
-    // create exit button
-    const exitButton = $('<span />');
     // Create header with group id, date, and slideshow
     let header = makeTopHalfOfCard(currentID);
     modalContent.append(header);
+
+    //  Create add User ID button
+    let addIDbutton = $('<button />')
+        .text('Enter Identification Info')
+        .addClass('manual-id-button mdl-button mdl-js-button mdl-button--raised')
+        .on('click', (e) => {
+
+        });
+      modalContent.append(addIDbutton);
 
     // Create section with All ids
     const border = $('<hr />');
@@ -205,10 +212,12 @@ function refreshCardAndModal(groupID, idInfo){
     currentID.results.map((currentResult, index) => {
       let resultRow =$('<div />').addClass('modal-result-row');
 
+      // column with the ranking (1, 2, ...)
       let resultRankColumn = $('<div />').addClass('modal-result-rank-column');
       let rank = $('<p />').text(index+1);
       resultRankColumn.append(rank);
 
+      // column with identification results (name, species, family, etc)
       let resultInfoColumn = $('<div />').addClass('modal-result-info-column');
       let commonNameDiv = makeCommonNameRow(currentResult);
       let scientificNameRow = makeRow('Scientific Name', currentResult.scientificName);
@@ -219,19 +228,20 @@ function refreshCardAndModal(groupID, idInfo){
       resultInfoColumn.append(genusRow);
       resultInfoColumn.append(familyRow);
 
+      //column with the PlantNet score
       let scoreColumn = $('<div />').addClass('modal-result-score-column');
       let score = $('<p />').text(`${currentResult.score}%`);
       scoreColumn.append(score);
 
+      // column with the delete result button
       let buttonColumn = $('<div />').addClass('modal-result-button-column');
       let button = $('<button />')
         .text('Delete')
-        .addClass('delete-button mdl-button mdl-js-button mdl-button--raised')
+        .addClass('delete-button mdl-button mdl-button--raised')
         .on('click', (e) => {
           
           deleteResult(currentID.groupID, currentResult.id);
         });
-  
       buttonColumn.append(button);
 
       resultRow.append(resultRankColumn);
@@ -244,7 +254,6 @@ function refreshCardAndModal(groupID, idInfo){
       const tempBorder = $('<hr />');
       resultsContainer.append(tempBorder);
     });
-
 
     modalContent.append(resultsContainer);
   }

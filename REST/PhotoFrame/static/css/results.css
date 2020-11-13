@@ -105,6 +105,19 @@
   width: 60%;
 }
 
+.manual-id-button {
+    background-color: rgb(63, 81, 181);
+    margin-top: 5px;
+    margin-bottom: 5px;
+    color: white;
+    width: 100%;
+}
+
+.manual-id-button:hover {
+    background-color: rgb(105, 118, 194);
+}
+
+
 /*  */
 .item-row {
     display: flex;
@@ -169,10 +182,14 @@ a column with the score, and a column with a Delete button */
 }
 
 .delete-button {
-    background-color: red;
+    background-color: rgb(207, 25, 25);
     color: white;
 }
 
 .delete-button:hover {
-    background-color: lightcoral;
+    background-color: rgb(240, 54, 54);
+}
+
+.delete-button::selection {
+    background: rgb(240, 54, 54);
 }
