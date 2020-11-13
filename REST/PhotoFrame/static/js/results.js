@@ -343,11 +343,17 @@ function makeManualEntryDiv(groupID){
                         .attr('id', 'saveManualEntryButton')
                         .on('click', (e) => {
                             console.log("Save Clicked");
-                            const sciName = document.getElementById('sciNameUserInput').value;
-                            const genus = document.getElementById('genusUserInput').value;
-                            const family = document.getElementById('familyUserInput').value;
+                            const sciNameValue = document.getElementById('sciNameUserInput').value;
+                            const sciName = sciNameValue == '' ? 'None Entered' : sciNameValue;
+
+                            const genusValue = document.getElementById('genusUserInput').value;
+                            const genus = genusValue == '' ? 'None Entered' : genusValue;
+
+                            const familyValue = document.getElementById('familyUserInput').value;
+                            const family = familyValue == '' ? 'None Entered' : familyValue;
+
                             const namesString = document.getElementById('commonNamesUserInput').value;
-                            const commonNamesArr = namesString.split("\n");
+                            const commonNamesArr = namesString == '' ? ['None Entered'] : namesString.split("\n");
                             saveUserResult(groupID, sciName, family, genus, commonNamesArr);
                             $('#manualEntryContainer').attr('style', 'display: none');
                         });

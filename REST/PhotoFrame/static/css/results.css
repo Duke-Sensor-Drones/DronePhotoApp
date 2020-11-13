@@ -200,6 +200,7 @@ textarea {
     border: 1px solid #ccc;
     border-radius: 4px;
     box-sizing: border-box;
+    font: 400 13.3333px Arial;
 }
 
 .modal-manual-entry-button-row {
