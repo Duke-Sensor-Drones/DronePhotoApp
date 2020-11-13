@@ -52,7 +52,7 @@ function hideError() {
 function handleError(title, data) {
   console.log('Error: ' + JSON.stringify(data));
 
-  if (data.status == 401) {
+  if (data[0].statusCode == 401) {
     // Authentication error. Redirect back to the log in screen.
     window.location = '/logout';
   } else if (data.status == 0) {

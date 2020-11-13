@@ -198,11 +198,15 @@ function refreshCardAndModal(groupID, idInfo){
     //  Create add User ID button
     let addIDbutton = $('<button />')
         .text('Enter Identification Info')
-        .addClass('manual-id-button mdl-button mdl-js-button mdl-button--raised')
+        .addClass('blue-button mdl-button mdl-js-button mdl-button--raised')
         .on('click', (e) => {
-
+          $('#manualEntryContainer').attr('style', 'display:block');
         });
       modalContent.append(addIDbutton);
+
+    // Create manual entry div, initially hidden
+    let manualEntry = makeManualEntryDiv();
+    modalContent.append(manualEntry);
 
     // Create section with All ids
     const border = $('<hr />');
@@ -217,9 +221,25 @@ function refreshCardAndModal(groupID, idInfo){
       let rank = $('<p />').text(index+1);
       resultRankColumn.append(rank);
 
+      // Make a single formatted string of all the common names
+      let names = [];
+      currentResult.commonNames.map((name, i) => {
+        let newName = name.toProperCase()
+        if(i == 0){
+          names.push(newName);
+        } else {
+          names.push(` ${newName}`);
+        }
+      });
+      if(names.length == 0){
+        names.push('None Found');
+      }
+      
       // column with identification results (name, species, family, etc)
       let resultInfoColumn = $('<div />').addClass('modal-result-info-column');
-      let commonNameDiv = makeCommonNameRow(currentResult);
+
+
+      let commonNameDiv = makeRow('Common Names', names);
       let scientificNameRow = makeRow('Scientific Name', currentResult.scientificName);
       let genusRow = makeRow('Genus', currentResult.genus);
       let familyRow = makeRow('Family', currentResult.family);
@@ -237,9 +257,8 @@ function refreshCardAndModal(groupID, idInfo){
       let buttonColumn = $('<div />').addClass('modal-result-button-column');
       let button = $('<button />')
         .text('Delete')
-        .addClass('delete-button mdl-button mdl-button--raised')
+        .addClass('red-button mdl-button mdl-button--raised')
         .on('click', (e) => {
-          
           deleteResult(currentID.groupID, currentResult.id);
         });
       buttonColumn.append(button);
@@ -258,6 +277,7 @@ function refreshCardAndModal(groupID, idInfo){
     modalContent.append(resultsContainer);
   }
 
+  // makes a row with a bolded title (titleText) and a value (valueText)
 function makeRow(titleText, valueText){
   const div = $('<div />').addClass('item-row');
   const title = $('<p />').addClass('item-label').text(`${titleText}:`);
@@ -267,25 +287,71 @@ function makeRow(titleText, valueText){
   return div;
 }
 
-function makeCommonNameRow(currentResult) {
-  const commonNameDiv = $('<div />').addClass('item-row');
-  const commonNameTitle = $('<p />').addClass('item-label').text('Common Names:');
-  let names = [];
-  currentResult.commonNames.map((name, i) => {
-    let newName = name.toProperCase()
-    if(i == 0){
-      names.push(newName);
-    } else {
-      names.push(` ${newName}`);
-    }
-  });
+function makeManualEntryDiv(){
+  const entriesRow = $('<div />').addClass('modal-manual-entry-col-container');
 
-  const commonNames = $('<p />').addClass('item-value').text(names);
+  // make column 1 which has a bunch of short text inputs
+  const col1 = $('<form />').addClass('modal-manual-entry-col1');
+  const sciNameLabel = $('<p />').text('Scientific Name:').addClass('modal-manual-entry-label');
+  const sciNameInput = $('<input />').attr('type', 'text').addClass('text-input').attr('id', 'sciNameUserInput');
+  const genusLabel = $('<p />').text('Genus:').addClass('modal-manual-entry-label');
+  const genusInput = $('<input />').attr('type', 'text').addClass('text-input').attr('id', 'genusUserInput');
+  const familyLabel = $('<p />').text('Family:').addClass('modal-manual-entry-label');
+  const familyInput = $('<input />').attr('type', 'text').addClass('text-input').attr('id', 'familyUserInput');
 
-  commonNameDiv.append(commonNameTitle);
-  commonNameDiv.append(commonNames);
 
-  return commonNameDiv;
+  col1.append(sciNameLabel, sciNameInput, genusLabel, genusInput, familyLabel, familyInput);
+
+  // make column 2 which has a text area input
+  const col2 = $('<form />').addClass('modal-manual-entry-col2');
+  let titleRow = $('</p />').text("Common Names:").addClass('modal-manual-entry-label');
+  let instructionsRow = $('<p />').text('(Split names by a new line)').addClass('modal-manual-entry-instruction');
+  let commonNamesInput = $('<textarea />').attr('id', 'commonNamesUserInput');
+  col2.append(titleRow, instructionsRow, commonNamesInput);
+
+  entriesRow.append(col1, col2);
+
+  //make button row
+  const buttonRowDiv = $('<div />').addClass('modal-manual-entry-button-row');
+  const saveButton = $('<button />')
+                        .addClass('green-button mdl-button mdl-js-button mdl-button--raised')
+                        .text('Save')
+                        .attr('id', 'saveManualEntryButton')
+                        .on('click', (e) => {
+                            console.log("Save Clicked");
+                            const sciName = document.getElementById('sciNameUserInput').value;
+                            const genus = document.getElementById('genusUserInput').value;
+                            const family = document.getElementById('familyUserInput').value;
+                            const namesString = document.getElementById('commonNamesUserInput').value;
+                            const commonNamesArr = namesString.split("\n");
+                            $('#manualEntryContainer').attr('style', 'display: none');
+                        });
+  const cancelButton = $('<button />')
+                        .addClass('red-button mdl-button mdl-js-button mdl-button--raised')
+                        .text('Cancel')
+                        .attr('id', 'cancelManualEntryButton')
+                        .on('click', (e) => {
+                          $('#manualEntryContainer').attr('style', 'display: none');
+                        });
+  buttonRowDiv.append(saveButton, cancelButton);
+
+  const rowContainer = $('<div />')
+                          .addClass('modal-manual-entry-row-container')
+                          .attr('id', 'manualEntryContainer')
+                          .attr('style', 'display: none');
+  rowContainer.append(entriesRow, buttonRowDiv);
+
+  return rowContainer;
+}
+
+// makes a row with labelText bolded and a text input element with the ID specified
+function makeTextInputRow(labelText, inputElementID){
+  const label = $('<p />').text(labelText).addClass('item-label');
+  const input = $('<input />').attr('type', 'text').attr('id', inputElementID);
+
+  div.append(label);
+  div.append(input);
+  return div;
 }
 
   // can be called on a String object, converts to proper case ie 'john smith' becomes 'John Smith'
@@ -297,6 +363,6 @@ $(document).ready(() => {
     loadIdentified();
 
     $('#results-modal-close').on('click', (e) => {
-      $('#results-modal').attr('style', 'display: hidden');
+      $('#results-modal').attr('style', 'display: none');
     });
 });

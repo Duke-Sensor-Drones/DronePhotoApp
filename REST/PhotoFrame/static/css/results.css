@@ -105,23 +105,19 @@
   width: 60%;
 }
 
-.manual-id-button {
-    background-color: rgb(63, 81, 181);
-    margin-top: 5px;
-    margin-bottom: 5px;
-    color: white;
-    width: 100%;
-}
-
-.manual-id-button:hover {
-    background-color: rgb(105, 118, 194);
-}
-
-
 /*  */
 .item-row {
     display: flex;
     flex-direction: row;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.item-column {
+    display: flex;
+    flex-direction: column;
     padding-top: 5px;
     padding-bottom: 5px;
     margin-left: 10px;
@@ -139,6 +135,77 @@
 .item-value {
     flex: 3;
     margin: 0px;
+}
+
+.modal-manual-entry-row-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-manual-entry-col-container {
+    display: flex;
+    flex-direction: row;
+}
+
+.modal-manual-entry-label {
+    font-weight: bold;
+    text-align: left;
+    margin: 5px 0px 0px 0px;
+    padding-right: 5px;
+}
+
+.modal-manual-entry-instruction { 
+    text-align: left;
+    font-size: 12px;
+    color: rgb(36, 35, 35);
+    margin: 0px;
+}
+
+.modal-manual-entry-col1 {
+    flex: 1;
+    padding: 0px 10px;
+}
+
+.modal-manual-entry-col2 {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 0px 10px;
+}
+
+.modal-manual-entry-col2 > textarea {
+    flex-basis: auto;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.modal-manual-entry-col2 > p {
+    flex-grow: 0;
+}
+
+input[type=text] {
+    width: 100%;
+    padding: 8px 10px;
+    margin: 0px;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+textarea {
+    padding: 8px 10px;
+    margin: 0px;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.modal-manual-entry-button-row {
+    display: flex;
+    width: 100%;
+    flex-direction: row;
 }
 
 .modal-results-container {
@@ -181,15 +248,34 @@ a column with the score, and a column with a Delete button */
     flex: 1;
 }
 
-.delete-button {
+button {
+    margin: 10px 5px !important;
+    width: 100%;
+}
+
+.red-button {
     background-color: rgb(207, 25, 25);
     color: white;
 }
 
-.delete-button:hover {
+.red-button:hover {
     background-color: rgb(240, 54, 54);
 }
 
-.delete-button::selection {
-    background: rgb(240, 54, 54);
+.blue-button {
+    background-color: rgb(63, 81, 181);
+    color: white
+}
+
+.blue-button:hover {
+    background-color: rgb(105, 118, 194);
+}
+
+.green-button {
+    background-color: rgb(22, 150, 22);
+    color: white
+}
+
+.green-button:hover {
+    background-color: rgb(27, 185, 27);
 }
