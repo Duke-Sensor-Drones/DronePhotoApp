@@ -592,7 +592,8 @@ async function identificationAPICall(res, paramJSON) {
         scientificName: x.species.scientificNameWithoutAuthor,
         commonNames: x.species.commonNames,
         family: x.species.family.scientificNameWithoutAuthor,
-        genus: x.species.genus.scientificNameWithoutAuthor
+        genus: x.species.genus.scientificNameWithoutAuthor,
+        manuallyIdentified: false
       }
 
       resultsToSave.push(indiv);
@@ -619,8 +620,7 @@ async function identificationAPICall(res, paramJSON) {
       date: dateString,
       mediaIDs: mediaIDs,
       groupID: groupID,
-      apiResults: resultsToSave,
-      userEnteredResults: [],
+      results: resultsToSave,
       uniqueCounter: 0
     };
     // Save to the groups identified storage
@@ -770,7 +770,7 @@ async function deleteResult(authToken, groupID, resultID, res){
   try {
     let key = groupPrefix + groupID;
     let resultGotten = await groupsIdentifiedStorage.getItem(key);
-    let results = resultGotten.apiResults;
+    let results = resultGotten.results;
     let newResults = []
     results.map(x => {
       // omitting the deleted result
@@ -780,7 +780,7 @@ async function deleteResult(authToken, groupID, resultID, res){
     })
 
     // saving updated results
-    resultGotten.apiResults = newResults;
+    resultGotten.results = newResults;
     await groupsIdentifiedStorage.setItem(key, resultGotten);
 
     let finalResult = await getSingleIdentified(authToken, groupID);
@@ -796,17 +796,19 @@ async function saveResult(authToken, groupID, scientificName, commonNames, famil
   try {
     let key = groupPrefix + groupID;
     let resultGotten = await groupsIdentifiedStorage.getItem(key);
-    let results = resultGotten.userEnteredResults;
+    let results = resultGotten.results;
 
     let userResult = {
       id: resultGotten.uniqueCounter,
+      score: null,
       scientificName: scientificName,
       commonNames: commonNames,
       family: family,
-      genus: genus
+      genus: genus,
+      manuallyIdentified: true
     }
 
-    results.push(userResult)
+    results.unshift(userResult);    //append to head of results array
     resultGotten.uniqueCounter++;
 
     // saving updated results
@@ -817,7 +819,7 @@ async function saveResult(authToken, groupID, scientificName, commonNames, famil
     res.status(200).send(finalResult.identification);
   } catch(error){
     res.status(400).send(error);
-    logger.error('Error deleting a result entry: ', error);
+    logger.error('Error saving a result entry: ', error);
   }
 }
 

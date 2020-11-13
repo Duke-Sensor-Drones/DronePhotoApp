@@ -66,6 +66,7 @@ function loadIdentified() {
     let reverse = identifiedResults.reverse()
 
     $.each(reverse, (i, currentID) => {
+      console.log(currentID);
         const card = $('<div />').addClass('demo-card-square mdl-card mdl-shadow--2dp card')
           .attr('id', `card-group-id-${currentID.groupID}`);
         const content = makeCardContent(currentID);
@@ -79,7 +80,7 @@ function makeCardContent(identificationInfo) {
   const cardContent = $('<div />');
   const topHalf = makeTopHalfOfCard(identificationInfo);
 
-  const results = identificationInfo.apiResults;
+  const results = identificationInfo.results;
   const list = $('<div />').addClass('card-ids-container');
 
   const listTitle = $('<div />').addClass('card-id-row');
@@ -91,7 +92,8 @@ function makeCardContent(identificationInfo) {
   $.each(results, (j, currentResult) => {
     const span = $('<div />').addClass('card-id-row');
     const name = $('<p />').addClass('card-id-common-name').text(`${j + 1}. ${currentResult.commonNames[0]}`);
-    const score = $('<p />').addClass('card-id-score').text(`${currentResult.score}%`);
+    var displayedScore = currentResult.manuallyIdentified ? 'U.E.' : `${currentResult.score}%`;
+    const score = $('<p />').addClass('card-id-score').text(displayedScore);
     span.append(name);
     span.append(score);
     list.append(span);
@@ -133,7 +135,6 @@ function makeTopHalfOfCard(currentID){
 }
 
 function makeSlideShowComponent(baseURLs) {
-  //let thumbnails = [];
   let images = [];
   let selected = 0;
 
@@ -235,7 +236,7 @@ function refreshCardAndModal(groupID, idInfo){
     modalContent.append(border);
 
     const resultsContainer = $('<div />').addClass('modal-results-container');
-    currentID.apiResults.map((currentResult, index) => {
+    currentID.results.map((currentResult, index) => {
       let resultRow =$('<div />').addClass('modal-result-row');
 
       // column with the ranking (1, 2, ...)
@@ -272,7 +273,8 @@ function refreshCardAndModal(groupID, idInfo){
 
       //column with the PlantNet score
       let scoreColumn = $('<div />').addClass('modal-result-score-column');
-      let score = $('<p />').text(`${currentResult.score}%`);
+      const displayedScore = currentResult.manuallyIdentified ? 'U.E.' : `${currentResult.score}%`;
+      let score = $('<p />').text(displayedScore);
       scoreColumn.append(score);
 
       // column with the delete result button
