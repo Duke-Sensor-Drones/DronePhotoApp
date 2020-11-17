@@ -715,7 +715,7 @@ function createPlantIdUrl(paramJSON) {
 }
 
 // takes in an array of media item ids, hits the Google Photos API
-// and returns an arrya of results from that
+// and returns an array of results from that
 async function getMediaItemsAPICall(authToken, mediaItemIDs) {
   let itemsReturned = [];
   let errorMessages = [];
@@ -742,7 +742,6 @@ async function getMediaItemsAPICall(authToken, mediaItemIDs) {
       mediaItems: itemsReturned,
       errors: errorMessages
     }
-    // res.status(200).send(toSend);
     return toSend;
 }
 
