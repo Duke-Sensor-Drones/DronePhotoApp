@@ -95,6 +95,7 @@ function listAlbums() {
 }
 
 $(document).ready(() => {
+  displayRemainingAPICalls();
   // Load the list of albums from the backend when the page is ready.
   listAlbums();
 });

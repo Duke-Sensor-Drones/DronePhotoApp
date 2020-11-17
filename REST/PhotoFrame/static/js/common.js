@@ -73,3 +73,22 @@ function handleError(title, data) {
   }
   hideLoadingDialog();
 }
+
+function displayRemainingAPICalls() {
+  $.ajax({
+    type: 'GET',
+    url: '/getRemainingCalls',
+    dataType: 'json',
+    success: (data) => {
+      console.log('succ');
+      if (data[0] != null) {
+        $("#remaining-plantnet-ids").append(data[0]);
+      } else {
+        $("#remaining-plantnet-ids").append('-');
+      }
+    },
+    error: (data) => {
+      handleError('Error trying to get remaining calls: ', data.message);
+    }
+  });
+}
