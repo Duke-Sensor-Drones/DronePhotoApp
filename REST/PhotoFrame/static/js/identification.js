@@ -44,7 +44,6 @@ function displayAlbumList() {
       });
 
       hideLoadingDialog();
-      console.log('Albums loaded.');
     },
       error: (data) => {
           hideLoadingDialog();
@@ -92,7 +91,6 @@ function showPreview(source, mediaItems) {
 };
 
 function loadFromAlbum(name, id) {
-  console.log("ALBUM:"+id);
   showLoadingDialog();
   // Make an ajax request to the backend to load from an album.
   $.ajax({
@@ -149,7 +147,6 @@ $.ajax({
   data: { paramJSON: paramJSON },
   success: (data) => {
     console.log('API hit');
-    console.log(data);
     callToast('Successful identification');
   },
   error: (data) => {
@@ -159,40 +156,7 @@ $.ajax({
 });
 }
 
-// takes in a media item ID and hits the google photos API
-// to get the rest of the info for the image
-function getMediaItem(mediaItemID) {
-$.ajax({
-  type: 'POST',
-  url: '/getMediaItem',
-  dataType: 'json',
-  data: { mediaItemID: mediaItemID },
-  success: (data) => {
-    console.log('Media Item Gotten, ', data);
-  },
-  error: (data) => {
-    handleError('Couldn\'t import media item', data);
-  }
-});
-}
-
-function getIdentifiedForAlbum(albumId) {
-$.ajax({
-  type: 'POST',
-  url: '/getAlbumIdentified',
-  dataType: 'json',
-  data: { albumId: albumId },
-  success: (data) => {
-    console.log('Album media Items Gotten, ', data[0]);
-  },
-  error: (data) => {
-    handleError('Couldn\'t get identified info for this album', data);
-  }
-});
-}
-
 function callToast(message) {
-  console.log("toast coming: " + message);
   var x = $('#id-toast');
   x.addClass("show");
   x.text(message)
@@ -203,7 +167,6 @@ function callToast(message) {
 }
 
 function displayOrganSelectors(selectedItems) {
-  console.log(selectedItems[0]);
   const organs = ["Leaf", "Flower", "Bark", "Fruit", "Other"];
   $('#organ-select-table').empty();
   $.each(selectedItems, (i, item) => {
@@ -252,8 +215,6 @@ $(document).ready(() => {
   var span = document.getElementsByClassName("close")[0];
 
   $('#identification-albums').on('click', '.id-album-item', (event) => {
-    console.log("Album target");
-    console.log(event);
       const target = $(event.currentTarget);
       const albumId = target.attr('data-id');
       const albumTitle = target.attr('data-title');
@@ -277,7 +238,6 @@ $(document).ready(() => {
         mediaID: itemId
       }
 
-    console.log('ID of clicked: ', itemId);;
     var currCheck = document.getElementById('check_' + itemId);
     
     if (currCheck.classList.contains("image-check-unchecked")) {
@@ -330,7 +290,6 @@ $(document).ready(() => {
           }
         });
       });
-      console.log(selectedItems);
       callToast('Identification request sent');
       identify(selectedItems);
       modal.style.display = "none";

@@ -80,7 +80,6 @@ function displayRemainingAPICalls() {
     url: '/getRemainingCalls',
     dataType: 'json',
     success: (data) => {
-      console.log('succ');
       if (data[0] != null) {
         $("#remaining-plantnet-ids").append(data[0]);
       } else {

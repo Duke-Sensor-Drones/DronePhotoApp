@@ -692,7 +692,7 @@ async function saveIdentifiedResult(res, resultsToSave, paramJSON, requestsLeft)
       requestsLeft: requestsLeft
     }
 
-    await storage.setItem(remainingIDsKey, resultJSON.remainingIdentificationRequests);
+    await storage.setItem(remainingIDsKey, requestsLeft);
     res.status(200).send(toReturn);
 }
 
