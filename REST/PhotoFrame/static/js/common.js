@@ -52,10 +52,15 @@ function hideError() {
 function handleError(title, data) {
   console.log('Error: ' + JSON.stringify(data));
 
-  if (data[0].statusCode == 401 || data.error.code == 401) {
+  if((data[0] != null) && (data[0].statusCode == 401)) {
+      // Authentication error. Redirect back to the log in screen.
+      window.location = '/logout';
+  } 
+  else if((data.error != null) && (data.error.code == 401)){
     // Authentication error. Redirect back to the log in screen.
-    window.location = '/logout';
-  } else if (data.status == 0) {
+      window.location = '/logout';
+  }
+  else if ((data.status != null) && (data.status == 0)) {
     // Server could not be reached from the request.
     // It could be blocked, unavailable or unresponsive.
     showError(title, 'Server could not be reached. Please try again.');

@@ -579,9 +579,16 @@ async function identificationAPICall(res, paramJSON) {
   }
 
   let url = createPlantIdUrl(paramJSON)
+  let result = []
   try {
-    const result = await request.get(url);
-    const resultJSON = JSON.parse(result);
+    result = await request.get(url);
+  } catch (error) {
+    res.status(400).send('Failed to connect to Pl@ntNet API, identification failed');
+    logger.error(`Pl@ntNet API Call error: ${error}`);
+    return;
+  }
+
+  const resultJSON = JSON.parse(result);
     const resultsToSave = [];
 
     resultJSON.results.map(x => {
@@ -595,16 +602,31 @@ async function identificationAPICall(res, paramJSON) {
         genus: x.species.genus.scientificNameWithoutAuthor,
         manuallyIdentified: false
       }
-
       resultsToSave.push(indiv);
-    })
+    });
+    saveIdentifiedResult(res, resultsToSave, paramJSON, resultJSON.remainingIdentificationRequests);
+}
 
+async function saveIdentifiedResult(res, resultsToSave, paramJSON, requestsLeft){
+  let groupID = '';
+  try {
+    groupID = await groupsIdentifiedStorage.getItem(groupIdCounter);
+  } catch(error) {
+    res.status(400).send('Failed to save Identification result');
+    logger.error(`Failed to load group ID from storage: ${error}`)
+    return;
+  }
     //Set group id
-    let groupID = await groupsIdentifiedStorage.getItem(groupIdCounter);
     if (groupID == null) {
-      //initializes group id to 1 if never set
-      await groupsIdentifiedStorage.setItem(groupIdCounter, 1);
-      groupID = 1;
+      try{
+        //initializes group id to 1 if never set
+        await groupsIdentifiedStorage.setItem(groupIdCounter, 1);
+        groupID = 1;
+      } catch(error) {
+        res.status(400).send('Failed to save Identification result');
+        logger.error(`Failed to initialize group ID counter in storage to 0: ${error}`);
+        return;
+      }
     }
 
     // Make an array of items that are part of the group
@@ -629,31 +651,43 @@ async function identificationAPICall(res, paramJSON) {
 
     // Add the group id to each of the media items
     for (let i = 0; i < mediaIDs.length; i++) {
-      var arr = await mediaItemsIdentifiedStorage.get(mediaIDs[i]);
+      var arr = null;
+      try {
+        arr = await mediaItemsIdentifiedStorage.get(mediaIDs[i]);
+      } catch(error) {
+        res.status(400).send('Failed to save Identification result');
+        logger.error(`Failed to save the current group ID to a media item: ${error}`);
+        return;
+      }
       if (arr == null) {
         arr = [];
       }
       arr.push(String(groupID));
+      try{
       await mediaItemsIdentifiedStorage.setItem(mediaIDs[i], arr);
+      } catch(error) {
+        res.status(400).send('Failed to save Identification result');
+        logger.error(`Failed to save the current group ID to a media item: ${error}`);
+        return;
+      }
     }
 
     //Incremenet the identifier
-    await groupsIdentifiedStorage.setItem(groupIdCounter, groupID + 1);
-
+    try{
+      await groupsIdentifiedStorage.setItem(groupIdCounter, groupID + 1);
+    } catch(error) {
+      res.status(400).send('Failed to save Identification result');
+      logger.error(`Failed to update the groupID counter in storage: ${error}`);
+      return;
+    }
     let toReturn = {
       date: toSave.date,
       mediaIDs: toSave.mediaIDs,
       groupID: toSave.groupID,
       results: toSave.results,
-      requestsLeft: resultJSON.remainingIdentificationRequests
+      requestsLeft: requestsLeft
     }
     res.status(200).send(toReturn);
-
-  } catch (error) {
-    res.status(400).send({error});
-    logger.error(`Plant ID API or Storage error: ${error}`);
-  }
-
 }
 
 // creates the url used to hit the PlantNet ID API

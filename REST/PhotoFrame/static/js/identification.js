@@ -153,7 +153,7 @@ $.ajax({
     callToast('Successful identification');
   },
   error: (data) => {
-    handleError('Couldn\'t import album', data);
+    handleError('Error trying to identify plant', data.responseText);
     callToast('Error occurred: unsuccessful identification');
   }
 });
