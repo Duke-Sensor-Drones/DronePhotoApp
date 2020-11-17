@@ -66,7 +66,6 @@ function loadIdentified() {
     let reverse = identifiedResults.reverse()
 
     $.each(reverse, (i, currentID) => {
-      console.log(currentID);
         const card = $('<div />').addClass('demo-card-square mdl-card mdl-shadow--2dp card')
           .attr('id', `card-group-id-${currentID.groupID}`);
         const content = makeCardContent(currentID);
@@ -342,7 +341,6 @@ function makeManualEntryDiv(groupID){
                         .text('Save')
                         .attr('id', 'saveManualEntryButton')
                         .on('click', (e) => {
-                            console.log("Save Clicked");
                             const sciNameValue = document.getElementById('sciNameUserInput').value;
                             const sciName = sciNameValue == '' ? 'None Entered' : sciNameValue;
 
