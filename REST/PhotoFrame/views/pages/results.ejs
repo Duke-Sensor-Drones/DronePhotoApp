@@ -1,0 +1,29 @@
+<% include ../partials/head %>
+
+<% include ../partials/dialogs %>
+
+<!-- No header, and the drawer stays open on larger screens (fixed drawer). -->
+<div class="id-header">
+    <h2>Results</h2>
+</div>
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-drawer">
+    <main class="mdl-layout__content">
+        <!-- Loading dialog -->
+        <div class="loading-dialog">
+            <h1>Loading</h1>
+            <div class="mdl-spinner mdl-js-spinner is-active"></div>
+        </div>
+        <div class="page-content results-card-container" id="results-container"></div>
+        <div class="modal-background" id="results-modal">
+            <div class="modal-content">
+                <span class="close" id="results-modal-close">&times;</span>
+                <div id="results-modal-content"></div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<% include ../partials/js %>
+<script src="/js/results.js"></script>
+
+<% include ../partials/footer %>

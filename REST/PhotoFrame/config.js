@@ -22,6 +22,9 @@ config.oAuthClientID = 'ADD YOUR CLIENT ID';
 // The OAuth client secret from the Google Developers console.
 config.oAuthclientSecret = 'ADD YOUR CLIENT SECRET';
 
+// PlantNet API Key
+config.plantNetAPIkey = 'ADD PLANT NET API KEY';
+
 // The callback to use for OAuth requests. This is the URL where the app is
 // running. For testing and running it locally, use 127.0.0.1.
 config.oAuthCallbackUrl = 'http://127.0.0.1:8080/auth/google/callback';
@@ -47,5 +50,10 @@ config.albumPageSize = 50;
 
 // The API end point to use. Do not change.
 config.apiEndpoint = 'https://photoslibrary.googleapis.com';
+
+// PlantNet API endpoint, do not change
+config.plantNetAPIendpoint = 'https://my-api.plantnet.org/v2/identify/all?';
+
+
 
 module.exports = config;

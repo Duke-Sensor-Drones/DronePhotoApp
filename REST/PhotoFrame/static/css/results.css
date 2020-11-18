@@ -1,0 +1,282 @@
+
+.card {
+    min-width: 330px;
+    margin: 5px;
+    padding: 5px;
+}
+
+.bold-text {
+    font-weight: bold;
+}
+
+/* CARDS */
+
+/* Encompasses the group id and the date*/
+.card-title{
+    font-size: 16px;
+    margin: 0 0 0;
+}
+
+.card-slideshow-container {
+    display: flex;
+    flex-direction: column;
+}
+
+/* cotnainer that holds the next/prev buttons for the slideshow */
+.card-slideshow-buttons-container {
+    display: flex;
+    flex-direction: row;
+    margin-top: 10px;
+}
+
+.card-slideshow-button {
+  cursor: pointer;
+  max-width: 25px;
+  max-height: 25px;
+  flex: 1;
+}
+
+.card-slideshow-text {
+    flex: 4;
+    text-align: center;
+}
+
+.card-slideshow-thumbnail {
+    width: 256;
+    align-self: center;
+}
+
+/* container for the list of common name options */
+.card-ids-container {
+    display: flex;
+    flex-direction: column;
+    height: 150px;
+    overflow: scroll;
+    overflow-y: scroll;
+}
+
+.card-id-row {
+    display: flex;
+    border-bottom: 1px solid rgb(0, 0, 0, .1);
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.card-id-common-name {
+    flex: 3;
+    margin: 0px;
+}
+
+.card-id-score {
+    flex: 1;
+    text-align: right;
+    margin: 0px;
+}
+
+.results-card-container{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+
+/* RESULTS MODAL THAT POPS UP */
+.modal-background {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  padding-top: 100px; /* Location of the box */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 60%;
+}
+
+/*  */
+.item-row {
+    display: flex;
+    flex-direction: row;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.item-column {
+    display: flex;
+    flex-direction: column;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.item-label {
+    font-weight: bold;
+    flex: 2;
+    text-align: right;
+    margin: 0px;
+    padding-right: 5px;
+}
+
+.item-value {
+    flex: 3;
+    margin: 0px;
+}
+
+.modal-manual-entry-row-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-manual-entry-col-container {
+    display: flex;
+    flex-direction: row;
+}
+
+.modal-manual-entry-label {
+    font-weight: bold;
+    text-align: left;
+    margin: 5px 0px 0px 0px;
+    padding-right: 5px;
+}
+
+.modal-manual-entry-instruction { 
+    text-align: left;
+    font-size: 12px;
+    color: rgb(36, 35, 35);
+    margin: 0px;
+}
+
+.modal-manual-entry-col1 {
+    flex: 1;
+    padding: 0px 10px;
+}
+
+.modal-manual-entry-col2 {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 0px 10px;
+}
+
+.modal-manual-entry-col2 > textarea {
+    flex-basis: auto;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.modal-manual-entry-col2 > p {
+    flex-grow: 0;
+}
+
+input[type=text] {
+    width: 100%;
+    padding: 8px 10px;
+    margin: 0px;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+textarea {
+    padding: 8px 10px;
+    margin: 0px;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font: 400 13.3333px Arial;
+}
+
+.modal-manual-entry-button-row {
+    display: flex;
+    width: 100%;
+    flex-direction: row;
+}
+
+.modal-results-container {
+    display: flex;
+    flex-direction: column;
+    height: 300px;
+    overflow: scroll;
+    overflow-y: scroll;
+}
+
+/* Contains a column thats a row of info about the result,
+a column with the score, and a column with a Delete button */
+.modal-result-row {
+    display: flex;
+    flex-direction: row;
+}
+
+.modal-result-rank-column {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+}
+
+.modal-result-info-column {
+    flex: 6;
+}
+
+.modal-result-score-column {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+}
+
+.modal-result-button-column {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+}
+
+button {
+    margin: 10px 5px !important;
+    width: 100%;
+}
+
+.red-button {
+    background-color: rgb(207, 25, 25);
+    color: white;
+}
+
+.red-button:hover {
+    background-color: rgb(240, 54, 54);
+}
+
+.blue-button {
+    background-color: rgb(63, 81, 181);
+    color: white
+}
+
+.blue-button:hover {
+    background-color: rgb(105, 118, 194);
+}
+
+.green-button {
+    background-color: rgb(22, 150, 22);
+    color: white
+}
+
+.green-button:hover {
+    background-color: rgb(27, 185, 27);
+}

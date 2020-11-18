@@ -1,13 +1,47 @@
 <% include ../partials/head %>
 
 <% include ../partials/dialogs %>
-<section class="sample-content">
+
+<!-- No header, and the drawer stays open on larger screens (fixed drawer). -->
+<div class="id-header" style="display: flex; flex-direction: row; width:auto">
+  <div>
     <h2>Send photos for identification</h2>
     <p class="subhead mdl-color-text--grey-700">Select photos to create new identification request or track previous requests.</p>
-    <ul class="mdl-list" id="identification"></ul>
-</section>
-
-
+  </div>
+  <div class="mdl-layout-spacer"></div>
+  <div style="display: flex; align-items: center; padding-right: 20px;">
+    <button class="mdl-button raised id-button" id="id_button">Identify Selected Photos with Pl@ntNet</button>
+    <div id="organ-modal" class="modal">
+      <!-- Modal content -->
+      <div class="modal-content" style="margin-top: 50px;">
+        <span class="close">&times;</span>
+        <h3>Select plant organ for selected photos</h3>
+        <p>Choose the best match for each image's contents.</p>
+        <table id="organ-select-table"></table>
+        <div style="display: flex; flex-direction: row; width:auto">
+          <div class="mdl-layout-spacer"></div>
+          <button class="mdl-button raised send-button" id="send-button"><i class="material-icons" style="padding-right:8px">send</i>Confirm organs and send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-drawer">
+  <div class="mdl-layout__drawer">
+    <span class="mdl-layout-title id-album-title"><i class="material-icons">collections</i> Albums</span>
+    <ul class="mdl-list" id="identification-albums"></ul>
+  </div>
+  <main class="mdl-layout__content">		
+    <!-- Loading dialog -->
+    <div class="loading-dialog">
+        <h1>Loading</h1>
+        <div class="mdl-spinner mdl-js-spinner is-active"></div>
+    </div>
+    <div class="page-content" id="images-container" style="padding-left: 20px;"></div>
+    <div class="toast" id="id-toast">
+    </div>
+  </main>
+</div>
 
 <% include ../partials/js %>
 <script src="/js/identification.js"></script>

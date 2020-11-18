@@ -78,9 +78,30 @@ albumCache.init();
 const storage = persist.create({dir: 'persist-storage/'});
 storage.init();
 
+// Stores a key that is a unique group value and then 
+// an array of media id's and the identification results
+// for the group
+
+// ALSO has a key "groupCounter" that stores an int that is incremented at each id
+// this ensures a unique group id. the const below will be the key
+const groupsIdentifiedStorage = persist.create({ dir: 'persist-groups-identified/' });
+groupsIdentifiedStorage.init();
+const groupIdCounter = "uniqueIdentifier";
+const groupPrefix = "group";  // every result saved should have this prefix
+// then a group id
+
+// Stores a key that is a media item id
+// and then an array of group ids that the media item has been
+// a part of
+const mediaItemsIdentifiedStorage = persist.create({ dir: 'persist-items-groups-identified/' });
+mediaItemsIdentifiedStorage.init();
+
+const remainingIDsKey = "remainingPlantNetIDs";
+
 // Set up OAuth 2.0 authentication through the passport.js library.
 const passport = require('passport');
 const auth = require('./auth');
+const { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } = require('constants');
 auth(passport);
 
 // Set up a session middleware to handle user sessions.
@@ -164,9 +185,9 @@ app.use((req, res, next) => {
   if (req.user && req.user.profile && req.user.profile.photos) {
     res.locals.avatarUrl = req.user.profile.photos[0].value;
   }
+
   next();
 });
-
 
 // GET request to the root.
 // Display the login screen if the user is not logged in yet, otherwise the
@@ -218,6 +239,17 @@ app.get('/identification', (req, res) => {
   renderIfAuthenticated(req, res, 'pages/identification');
 });
 
+// Loads the results page if the user is authenticated.
+// This page displays the identification results.
+app.get('/results', (req, res) => {
+  renderIfAuthenticated(req, res, 'pages/results');
+});
+
+app.get('/getRemainingCalls', async (req, res) => {
+  const remIDs = await storage.getItem(remainingIDsKey);
+  res.status(200).send([remIDs]);
+});
+
 // Handles selections from the album page where an album ID is submitted.
 // The user has selected an album and wants to load photos from an album
 // into the photo frame.
@@ -249,6 +281,7 @@ app.get('/getAlbums', async (req, res) => {
 
   // Attempt to load the albums from cache if available.
   // Temporarily caching the albums makes the app more responsive.
+
   const cachedAlbums = await albumCache.getItem(userId);
   if (cachedAlbums) {
     logger.verbose('Loaded albums from cache.');
@@ -314,7 +347,35 @@ app.get('/getQueue', async (req, res) => {
   }
 });
 
+// Makes a call to the Plant ID API
+app.post('/identifyPlant', async (req, res) => {
+  const paramJSON = req.body.paramJSON;
+  identificationAPICall(res, paramJSON);
+});
 
+app.get('/getIdentified', async (req, res) => {
+  getAllIdentified(res, req.user.token);
+});
+
+// delete a result for a group
+app.post('/deleteResult', async (req, res) => {
+  const authToken = req.user.token;
+  const groupID = req.body.groupID;
+  const resultID = req.body.resultID;
+  deleteResult(authToken, groupID, resultID, res);
+});
+
+// saves a users entered result
+
+app.post('/saveUserResult', async (req, res) => {
+  const authToken = req.user.token;
+  const groupID = req.body.groupID;
+  const sciName = req.body.scientificName;
+  const family = req.body.family;
+  const commonNames = req.body.commonNames;
+  const genus = req.body.genus;
+  saveResult(authToken, groupID, sciName, commonNames, family, genus, res);
+})
 
 // Start the server
 server.listen(config.port, () => {
@@ -497,5 +558,309 @@ async function libraryApiGetAlbums(authToken) {
   logger.info('Albums loaded.');
   return {albums, error};
 }
+
+
+// Will identify plants from selected photos
+// @param paramJSON: list of map structs ex:
+// [
+//   {
+//     url: image base url,
+//     organ: plant organ in pic,   //e.g. "leaf" or "flower"
+//     mediaID: media item ID
+//   },
+//   {
+//     url: image base url,
+//     organ: plant organ in pic,   //e.g. "leaf" or "flower"
+//     mediaID: media item ID
+//   }
+// ]
+// 
+// 
+async function identificationAPICall(res, paramJSON) {
+  if (paramJSON.length > 5) {
+    res.status(400).send("Too many pictures selected");
+    logger.error("Too many images selected for ID");
+  }
+
+  let url = createPlantIdUrl(paramJSON)
+  let result = []
+  try {
+    result = await request.get(url);
+  } catch (error) {
+    res.status(400).send('Failed to connect to Pl@ntNet API, identification failed');
+    logger.error(`Pl@ntNet API Call error: ${error}`);
+    return;
+  }
+
+  const resultJSON = JSON.parse(result);
+    const resultsToSave = [];
+
+    resultJSON.results.map(x => {
+      const roundedScore = Math.round(((x.score * 100) + Number.EPSILON) * 100) / 100
+      const indiv = {
+        id: x.gbif.id,
+        score: roundedScore,
+        scientificName: x.species.scientificNameWithoutAuthor,
+        commonNames: x.species.commonNames,
+        family: x.species.family.scientificNameWithoutAuthor,
+        genus: x.species.genus.scientificNameWithoutAuthor,
+        manuallyIdentified: false
+      }
+      resultsToSave.push(indiv);
+    });
+    saveIdentifiedResult(res, resultsToSave, paramJSON, resultJSON.remainingIdentificationRequests);
+}
+
+async function saveIdentifiedResult(res, resultsToSave, paramJSON, requestsLeft){
+  let groupID = '';
+  try {
+    groupID = await groupsIdentifiedStorage.getItem(groupIdCounter);
+  } catch(error) {
+    res.status(400).send('Failed to save Identification result');
+    logger.error(`Failed to load group ID from storage: ${error}`)
+    return;
+  }
+    //Set group id
+    if (groupID == null) {
+      try{
+        //initializes group id to 1 if never set
+        await groupsIdentifiedStorage.setItem(groupIdCounter, 1);
+        groupID = 1;
+      } catch(error) {
+        res.status(400).send('Failed to save Identification result');
+        logger.error(`Failed to initialize group ID counter in storage to 0: ${error}`);
+        return;
+      }
+    }
+
+    // Make an array of items that are part of the group
+    let mediaIDs = [];
+    paramJSON.map((x) => {
+      mediaIDs.push(x.mediaID);
+    });
+
+    // Make an object with the above array and results to save and group id
+    let date = new Date()
+    let dateString = date.toLocaleDateString()
+    let toSave = {
+      date: dateString,
+      mediaIDs: mediaIDs,
+      groupID: groupID,
+      results: resultsToSave,
+      uniqueCounter: 0
+    };
+    // Save to the groups identified storage
+    let key = groupPrefix + String(groupID)
+    groupsIdentifiedStorage.setItem(key, toSave);
+
+    // Add the group id to each of the media items
+    for (let i = 0; i < mediaIDs.length; i++) {
+      var arr = null;
+      try {
+        arr = await mediaItemsIdentifiedStorage.get(mediaIDs[i]);
+      } catch(error) {
+        res.status(400).send('Failed to save Identification result');
+        logger.error(`Failed to save the current group ID to a media item: ${error}`);
+        return;
+      }
+      if (arr == null) {
+        arr = [];
+      }
+      arr.push(String(groupID));
+      try{
+      await mediaItemsIdentifiedStorage.setItem(mediaIDs[i], arr);
+      } catch(error) {
+        res.status(400).send('Failed to save Identification result');
+        logger.error(`Failed to save the current group ID to a media item: ${error}`);
+        return;
+      }
+    }
+
+    //Incremenet the identifier
+    try{
+      await groupsIdentifiedStorage.setItem(groupIdCounter, groupID + 1);
+    } catch(error) {
+      res.status(400).send('Failed to save Identification result');
+      logger.error(`Failed to update the groupID counter in storage: ${error}`);
+      return;
+    }
+    let toReturn = {
+      date: toSave.date,
+      mediaIDs: toSave.mediaIDs,
+      groupID: toSave.groupID,
+      results: toSave.results,
+      requestsLeft: requestsLeft
+    }
+
+    await storage.setItem(remainingIDsKey, requestsLeft);
+    res.status(200).send(toReturn);
+}
+
+// creates the url used to hit the PlantNet ID API
+function createPlantIdUrl(paramJSON) {
+  var imageUrlList = "";
+  let organList = "";
+
+  paramJSON.map((x) => {
+    let ogImage = x.url;
+    let a = ogImage.replace(new RegExp(":", "g"), "%3A");
+    let b = a.replace(new RegExp("/", "g"), "%2F");
+    let c = "&images=" + b;
+    imageUrlList += c;
+
+    organList += "&organs=" + x.organ;
+  });
+
+  var finalURL =
+    config.plantNetAPIendpoint + "api-key=" + config.plantNetAPIkey;
+
+  finalURL += imageUrlList;
+  finalURL += organList;
+
+  return finalURL;
+}
+
+// takes in an array of media item ids, hits the Google Photos API
+// and returns an array of results from that
+async function getMediaItemsAPICall(authToken, mediaItemIDs) {
+  let itemsReturned = [];
+  let errorMessages = [];
+  for(let i = 0; i < mediaItemIDs.length; i++){
+    let mediaItemID = mediaItemIDs[i];
+
+    let call = config.apiEndpoint + '/v1/mediaItems/' + mediaItemID;
+
+    try {
+      const result = await request.get(call, {
+        headers: { 'Content-Type': 'application/json' },
+        json: true,
+        auth: { 'bearer': authToken },
+      });
+
+      itemsReturned.push(result);
+
+    } catch (error) {
+      errorMessages.push(error);
+      logger.error(`Error getting a media item from google photos: ${error}`);
+    }
+  }
+    let toSend = {
+      mediaItems: itemsReturned,
+      errors: errorMessages
+    }
+    return toSend;
+}
+
+async function getAllIdentified(res, authToken){
+  try{
+    let identified = await groupsIdentifiedStorage.valuesWithKeyMatch(groupPrefix);
+    let result = {
+      identifications: [],
+      errors: []
+    };
+    
+    for(let i = 0; i < identified.length; i++){
+      let returned = await getMediaItemsAPICall(authToken, identified[i].mediaIDs);
+
+      let errors = returned.errors;
+      errors.map(x => {
+        result.errors.push(x);
+      })
+
+      let save = {
+        ...identified[i],
+        mediaItems: returned.mediaItems,
+      }
+      result.identifications.push(save);
+    }
+
+    res.status(200).send(result);
+  } catch(error){
+    res.status(400).send(error);
+    logger.error('Error getting identified info from the storage. Possiblt need to delete persist-groups-identified and persist-items-groups-identified. NOTE: deleting these will wipe identified result memory');
+  }
+}
+
+async function getSingleIdentified(authToken, groupID){
+  try{
+    const key = groupPrefix + groupID;
+    let identified = await groupsIdentifiedStorage.getItem(key);
+
+    let returned = await getMediaItemsAPICall(authToken, identified.mediaIDs);
+
+    let save = {
+        ...identified,
+        mediaItems: returned.mediaItems,
+      }
+    
+    let result = {
+      errors: returned.errors,
+      identification: save
+    }
+
+    return result
+  } catch(error){
+    logger.error('Error getting single identified info from the storage: ', error);
+  }
+}
+
+
+async function deleteResult(authToken, groupID, resultID, res){
+  try {
+    let key = groupPrefix + groupID;
+    let resultGotten = await groupsIdentifiedStorage.getItem(key);
+    let results = resultGotten.results;
+    let newResults = []
+    results.map(x => {
+      // omitting the deleted result
+      if(x.id != resultID){
+        newResults.push(x);
+      }
+    })
+
+    // saving updated results
+    resultGotten.results = newResults;
+    await groupsIdentifiedStorage.setItem(key, resultGotten);
+
+    let finalResult = await getSingleIdentified(authToken, groupID);
+    logger.info(finalResult);
+    res.status(200).send(finalResult.identification);
+  } catch(error){
+    res.status(400).send(error);
+    logger.error('Error deleting a result entry: ', error);
+  }
+}
+
+async function saveResult(authToken, groupID, scientificName, commonNames, family, genus, res) {
+  try {
+    let key = groupPrefix + groupID;
+    let resultGotten = await groupsIdentifiedStorage.getItem(key);
+    let results = resultGotten.results;
+
+    let userResult = {
+      id: resultGotten.uniqueCounter,
+      score: null,
+      scientificName: scientificName,
+      commonNames: commonNames,
+      family: family,
+      genus: genus,
+      manuallyIdentified: true
+    }
+
+    results.unshift(userResult);    //append to head of results array
+    resultGotten.uniqueCounter++;
+
+    // saving updated results
+    await groupsIdentifiedStorage.setItem(key, resultGotten);
+
+    let finalResult = await getSingleIdentified(authToken, groupID);
+    logger.info(finalResult);
+    res.status(200).send(finalResult.identification);
+  } catch(error){
+    res.status(400).send(error);
+    logger.error('Error saving a result entry: ', error);
+  }
+}
+
 
 // [END app]

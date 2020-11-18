@@ -12,35 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Notifies the backend to load an album into the photo frame queue.
-// If the request is successful, the photo frame queue is opened,
-// otherwise an error message is shown.
-function loadFromAlbum(name, id) {
-  showLoadingDialog();
-  // Make an ajax request to the backend to load from an album.
-  $.ajax({
-    type: 'POST',
-    url: '/loadFromAlbum',
-    dataType: 'json',
-    data: {albumId: id},
-    success: (data) => {
-      console.log('Albums imported:' + JSON.stringify(data.parameters));
-      if (data.photos && data.photos.length) {
-        // Photos were loaded from the album, open the photo frame preview
-        // queue.
-        window.location = '/';
-      } else {
-        // No photos were loaded. Display an error.
-        handleError('Couldn\'t import album', 'Album is empty.');
-      }
-      hideLoadingDialog();
-    },
-    error: (data) => {
-      handleError('Couldn\'t import album', data);
-    }
-  });
-}
-
 // Loads a list of all albums owned by the logged in user from the backend.
 // The backend returns a list of albums from the Library API that is rendered
 // here in a list with a cover image, title and a link to open it in Google
@@ -83,7 +54,7 @@ function listAlbums() {
         primaryContentRoot.append(primaryContentImage);
 
         // The title of the album as the primary title of this item.
-        const primaryContentTitle = $('<div />').text(item.title);
+        const primaryContentTitle = $('<div />').text(item.title).addClass('album-title');
         primaryContentRoot.append(primaryContentTitle);
 
         // The number of items in this album as the sub title.
@@ -124,17 +95,7 @@ function listAlbums() {
 }
 
 $(document).ready(() => {
+  displayRemainingAPICalls();
   // Load the list of albums from the backend when the page is ready.
   listAlbums();
-
-  // Clicking the 'add to frame' button starts an import request.
-  $('#albums').on('click', '.album-title', (event) => {
-    const target = $(event.currentTarget);
-    const albumId = target.attr('data-id');
-    const albumTitle = target.attr('data-title');
-
-    console.log('Importing album: ' + albumTitle);
-
-    loadFromAlbum(albumTitle, albumId);
-  });
 });
